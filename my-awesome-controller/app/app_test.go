@@ -5,6 +5,7 @@ import (
 	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/app"
 	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/internal/opts"
 	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
+	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned"
 	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned/fake"
 	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/informers/externalversions"
 	v12 "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/informers/externalversions/awesome.controller.io/v1"
@@ -26,8 +27,8 @@ func TestMain(m *testing.M) {
 	defer cancel()
 
 	options := opts.DefaultOptions
-	informer := newFakeInformer()
-	application = app.New(&options, informer)
+	informer, clientSet := newFakeInformer()
+	application = app.New(&options, informer, clientSet)
 	httptest.NewServer(application.ServerMux)
 	err := application.Run(ctx.Done())
 
@@ -42,9 +43,10 @@ func TestCreate(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 
 	fqn, _ := cache.MetaNamespaceKeyFunc(cake)
-	cakeInOven := application.Database.Get(fqn)
+	actual := application.Database.Get(fqn)
 
-	verify(cake, cakeInOven, t)
+	verify(cake, actual, t)
+	verifyState(v1.ADDED, actual, t)
 }
 
 func verify(expected *v1.Cake, actual *v1.Cake, t *testing.T) {
@@ -57,12 +59,19 @@ func verify(expected *v1.Cake, actual *v1.Cake, t *testing.T) {
 	}
 }
 
-func newFakeInformer() v12.CakeInformer {
+func verifyState(expected string, actual *v1.Cake, t *testing.T) {
+	cakeResource, _ := client.Awesome().Cakes(actual.Namespace).Get(actual.Name, metav1.GetOptions{})
+	if expected != cakeResource.Status.State {
+		t.Errorf("state is not correct: want %s, have %s", expected, actual.Status.State)
+	}
+}
+
+func newFakeInformer() (v12.CakeInformer, versioned.Interface) {
 	client = fake.NewSimpleClientset()
 	informerFactory := externalversions.NewSharedInformerFactory(client, 0)
 	informer := informerFactory.Awesome().V1().Cakes()
 
-	return informer
+	return informer, client
 }
 
 func createNewCake(name string, namespace string, cakeType string) (*v1.Cake, error) {

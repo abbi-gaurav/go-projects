@@ -4,6 +4,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	ADDED   string = "added"
+	UPDATED string = "updated"
+	DELETED string = "deleted"
+)
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -19,7 +25,7 @@ type CakeSpec struct {
 }
 
 type CakeStatus struct {
-	Cooked bool `json:"cooked"`
+	State string `json:"cooked"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

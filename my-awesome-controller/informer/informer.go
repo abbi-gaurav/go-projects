@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func CreateInformer(duration time.Duration) v1.CakeInformer {
+func CreateInformer(duration time.Duration) (v1.CakeInformer, clientset.Interface) {
 	config, err := rest.InClusterConfig()
 
 	if err != nil {
@@ -24,5 +24,5 @@ func CreateInformer(duration time.Duration) v1.CakeInformer {
 
 	factory := informers.NewSharedInformerFactory(client, duration)
 
-	return factory.Awesome().V1().Cakes()
+	return factory.Awesome().V1().Cakes(), client
 }

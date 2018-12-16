@@ -3,6 +3,8 @@ package controller
 import (
 	"fmt"
 	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/db"
+	types "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
+	clientSet "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned"
 	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/informers/externalversions/awesome.controller.io/v1"
 	listers "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/listers/awesome.controller.io/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -20,9 +22,10 @@ type CakeController struct {
 	workQueue  workqueue.RateLimitingInterface
 	cakeSynced cache.InformerSynced
 	lister     listers.CakeLister
+	clientSet  clientSet.Interface
 }
 
-func New(informer v1.CakeInformer, database db.DB) *CakeController {
+func New(informer v1.CakeInformer, database db.DB, clientSet clientSet.Interface) *CakeController {
 	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 	cakeController := &CakeController{
 		db:         database,
@@ -30,6 +33,7 @@ func New(informer v1.CakeInformer, database db.DB) *CakeController {
 		workQueue:  queue,
 		cakeSynced: informer.Informer().HasSynced,
 		lister:     informer.Lister(),
+		clientSet:  clientSet,
 	}
 
 	informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -127,9 +131,18 @@ func (c *CakeController) handle(key string) error {
 
 	if c.db.Get(key) == nil {
 		c.db.Add(key, cake)
+		err = c.updateStatus(cake, types.ADDED)
+		return err
 	}
 
 	return nil
+}
+
+func (c *CakeController) updateStatus(cake *types.Cake, state string) error {
+	cakeCopy := cake.DeepCopy()
+	cakeCopy.Status.State = state
+	_, err := c.clientSet.AwesomeV1().Cakes(cake.Namespace).Update(cakeCopy)
+	return err
 }
 
 func (c *CakeController) ShutDown() {

@@ -18,8 +18,8 @@ func main() {
 	options := opts.ParseFlags()
 
 	stopCh := setupSignalHandler()
-	cakeInformer := informer.CreateInformer(options.ResyncDuration)
-	application := app.New(options, cakeInformer)
+	cakeInformer, clientSet := informer.CreateInformer(options.ResyncDuration)
+	application := app.New(options, cakeInformer, clientSet)
 
 	err := application.Run(stopCh)
 	println(err)

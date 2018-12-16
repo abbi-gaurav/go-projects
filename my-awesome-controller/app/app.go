@@ -4,6 +4,7 @@ import (
 	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/controller"
 	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/db"
 	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/internal/opts"
+	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned"
 	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/informers/externalversions/awesome.controller.io/v1"
 	"net/http"
 )
@@ -14,9 +15,9 @@ type Application struct {
 	Database       db.DB
 }
 
-func New(opts *opts.Options, informer v1.CakeInformer) *Application {
+func New(opts *opts.Options, informer v1.CakeInformer, clientset versioned.Interface) *Application {
 	database := db.New(opts.DbType)
-	cakeController := controller.New(informer, database)
+	cakeController := controller.New(informer, database, clientset)
 
 	serverMux := http.NewServeMux()
 
