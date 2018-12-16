@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 )
 
 var onlyOneSignalHandler = make(chan struct{})
@@ -25,6 +26,10 @@ func main() {
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", options.Port), application.ServerMux))
 
+	<-stopCh
+
+	application.ShutDown()
+
 }
 
 func setupSignalHandler() <-chan struct{} {
@@ -32,7 +37,7 @@ func setupSignalHandler() <-chan struct{} {
 
 	stop := make(chan struct{})
 	c := make(chan os.Signal, 2)
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
 		close(stop)

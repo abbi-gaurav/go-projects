@@ -1,6 +1,9 @@
 package db
 
-import "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
+import (
+	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
+	"strings"
+)
 
 type DB interface {
 	Add(fqn string, cake *v1.Cake)
@@ -10,7 +13,7 @@ type DB interface {
 }
 
 func New(dbType string) DB {
-	switch dbType {
+	switch strings.ToLower(dbType) {
 	case "memory":
 		return newInMemory()
 	default:

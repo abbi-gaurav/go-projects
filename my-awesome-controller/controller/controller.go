@@ -3,7 +3,6 @@ package controller
 import (
 	"fmt"
 	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/db"
-	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/internal/opts"
 	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/informers/externalversions/awesome.controller.io/v1"
 	listers "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/listers/awesome.controller.io/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -11,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
+	"log"
 	"time"
 )
 
@@ -22,9 +22,8 @@ type CakeController struct {
 	lister     listers.CakeLister
 }
 
-func New(opts *opts.Options, informer v1.CakeInformer) *CakeController {
+func New(informer v1.CakeInformer, database db.DB) *CakeController {
 	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
-	database := db.New(opts.DbType)
 	cakeController := &CakeController{
 		db:         database,
 		informer:   informer,
@@ -45,19 +44,16 @@ func (c *CakeController) enqueue(obj interface{}) {
 	var key string
 	var err error
 
-	println("enqueue called", obj)
-
 	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
 		utilRuntime.HandleError(err)
 		return
 	}
+
+	println("enqueue called", obj)
 	c.workQueue.AddRateLimited(key)
 }
 
 func (c *CakeController) Run(parallelism int, stopCh <-chan struct{}) error {
-	defer utilRuntime.HandleCrash()
-	defer c.workQueue.ShutDown()
-
 	go c.informer.Informer().Run(stopCh)
 
 	if !cache.WaitForCacheSync(stopCh, c.cakeSynced) {
@@ -72,11 +68,6 @@ func (c *CakeController) Run(parallelism int, stopCh <-chan struct{}) error {
 	return nil
 }
 
-func (c *CakeController) Run2(parallelism int, stopCh <-chan struct{}) error {
-	go c.informer.Informer().Run(stopCh)
-	return nil
-}
-
 func (c *CakeController) runWorker() {
 	for c.processNextItem() {
 	}
@@ -84,6 +75,7 @@ func (c *CakeController) runWorker() {
 
 func (c *CakeController) processNextItem() bool {
 	obj, shutDown := c.workQueue.Get()
+	log.Println("got item from queue", obj, shutDown)
 	if shutDown {
 		return false
 	}
@@ -94,11 +86,13 @@ func (c *CakeController) processNextItem() bool {
 		var ok bool
 
 		if key, ok = obj.(string); !ok {
+			log.Println("unexpected obj ", obj)
 			c.workQueue.Forget(obj)
 			utilRuntime.HandleError(fmt.Errorf("expected string in workqueue, but got #%v", obj))
 			return nil
 		}
 
+		log.Println("calling sync handler")
 		if err := c.syncHandler(key); err != nil {
 			c.workQueue.AddRateLimited(key)
 			return fmt.Errorf("error syncing '%s': %s, requeuing", key, err.Error())
@@ -123,7 +117,9 @@ func (c *CakeController) syncHandler(key string) error {
 	}
 
 	cake, err := c.lister.Cakes(namespace).Get(name)
+	log.Println("got cake ", cake)
 	if err != nil {
+		log.Println("err while getting cake ", err)
 		if errors.IsNotFound(err) {
 			utilRuntime.HandleError(fmt.Errorf("'cake %s' in workqueue no longer exists", key))
 			return nil
@@ -132,8 +128,13 @@ func (c *CakeController) syncHandler(key string) error {
 	}
 
 	if c.db.Get(key) == nil {
+		log.Println("Adding cake")
 		c.db.Add(key, cake)
 	}
 
 	return nil
+}
+
+func (c *CakeController) ShutDown() {
+	c.workQueue.ShutDown()
 }

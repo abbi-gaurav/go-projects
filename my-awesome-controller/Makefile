@@ -13,14 +13,17 @@ clean:
 
 vet:
 	go list ./... | grep -v 'pkg/client' | xargs go vet
-test:
-	go list ./... | grep -v 'pkg/client' | xargs go test -v -race
 
-build: clean vet test
+run-test:
+	go list ./... | grep -v 'pkg/client' | xargs go test -v -count=1
+
+compile:
 	CGO_ENABLED=0 GOOS=${GOOS} GOARCH=${GOARCH} go build \
 		-ldflags "-s -w -X ${PROJECT}/version.Release=${RELEASE} \
 		-X ${PROJECT}/version.Commit=${COMMIT} -X ${PROJECT}/version.BuildTime=${BUILD_TIME}" \
 		-o ${APP}
+
+build: clean vet run-test compile
 
 image: build
 	docker build -t $(CONTAINER_IMAGE):$(RELEASE) .
