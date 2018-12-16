@@ -3,13 +3,10 @@ package db
 import "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
 
 type DB interface {
-	Add(cake *v1.Cake)
-	Update(cake *v1.Cake)
-	Delete(cake *v1.Cake)
-}
-
-func fqName(cake *v1.Cake) string {
-	return cake.Namespace + "." + cake.Name
+	Add(fqn string, cake *v1.Cake)
+	Update(fqn string, cake *v1.Cake)
+	Delete(fqn string)
+	Get(fqn string) *v1.Cake
 }
 
 func New(dbType string) DB {

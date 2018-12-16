@@ -10,9 +10,8 @@ import (
 type Cake struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   CakeSpec   `json:"spec"`
-	Status CakeStatus `json:"status"`
+	Spec              CakeSpec   `json:"spec"`
+	Status            CakeStatus `json:"status"`
 }
 
 type CakeSpec struct {

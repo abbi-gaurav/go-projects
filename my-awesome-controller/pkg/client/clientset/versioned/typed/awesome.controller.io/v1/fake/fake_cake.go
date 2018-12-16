@@ -49,7 +49,7 @@ func (c *FakeCakes) List(opts v1.ListOptions) (result *awesomecontrolleriov1.Cak
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &awesomecontrolleriov1.CakeList{}
+	list := &awesomecontrolleriov1.CakeList{ListMeta: obj.(*awesomecontrolleriov1.CakeList).ListMeta}
 	for _, item := range obj.(*awesomecontrolleriov1.CakeList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)

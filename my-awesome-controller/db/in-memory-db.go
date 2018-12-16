@@ -17,26 +17,32 @@ func newInMemory() DB {
 	}
 }
 
-func (memDB *inMemoryDB) Add(cake *v1.Cake) {
-	memDB.set(cake, "add")
+func (memDB *inMemoryDB) Add(fqn string, cake *v1.Cake) {
+	memDB.set(fqn, cake, "add")
 }
 
-func (memDB *inMemoryDB) Update(cake *v1.Cake) {
-	memDB.set(cake, "update")
+func (memDB *inMemoryDB) Update(fqn string, cake *v1.Cake) {
+	memDB.set(fqn, cake, "update")
 }
 
-func (memDB *inMemoryDB) Delete(cake *v1.Cake) {
+func (memDB *inMemoryDB) Delete(fqn string) {
 	memDB.Lock()
-	delete(memDB.m, fqName(cake))
+	delete(memDB.m, fqn)
 	memDB.log("delete")
 	memDB.Unlock()
 }
 
-func (memDB *inMemoryDB) set(cake *v1.Cake, op string) {
+func (memDB *inMemoryDB) set(fqn string, cake *v1.Cake, op string) {
 	memDB.Lock()
-	memDB.m[cake.Name] = cake
+	memDB.m[fqn] = cake
 	memDB.log(op)
 	memDB.Unlock()
+}
+
+func (memDB *inMemoryDB) Get(fqn string) *v1.Cake {
+	memDB.RLock()
+	obj := memDB.m[fqn]
+	return obj
 }
 
 func (memDB *inMemoryDB) log(op string) {
