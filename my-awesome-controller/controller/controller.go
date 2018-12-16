@@ -78,26 +78,7 @@ func (c *CakeController) processNextItem() bool {
 		return false
 	}
 
-	err := func(obj interface{}) error {
-		defer c.workQueue.Done(obj)
-		var key string
-		var ok bool
-
-		if key, ok = obj.(string); !ok {
-			c.workQueue.Forget(obj)
-			utilRuntime.HandleError(fmt.Errorf("expected string in workqueue, but got #%v", obj))
-			return nil
-		}
-
-		log.Println("calling sync handler")
-		if err := c.syncHandler(key); err != nil {
-			c.workQueue.AddRateLimited(key)
-			return fmt.Errorf("error syncing '%s': %s, requeuing", key, err.Error())
-		}
-		c.workQueue.Forget(obj)
-		fmt.Printf("Successfully synced #%s", key)
-		return nil
-	}(obj)
+	err := c.process(obj)
 
 	if err != nil {
 		utilRuntime.HandleError(err)
@@ -106,7 +87,28 @@ func (c *CakeController) processNextItem() bool {
 	return true
 }
 
-func (c *CakeController) syncHandler(key string) error {
+func (c *CakeController) process(obj interface{}) error {
+	defer c.workQueue.Done(obj)
+	var key string
+	var ok bool
+
+	if key, ok = obj.(string); !ok {
+		c.workQueue.Forget(obj)
+		utilRuntime.HandleError(fmt.Errorf("expected string in workqueue, but got #%v", obj))
+		return nil
+	}
+
+	log.Println("calling sync handler")
+	if err := c.handle(key); err != nil {
+		c.workQueue.AddRateLimited(key)
+		return fmt.Errorf("error syncing '%s': %s, requeuing", key, err.Error())
+	}
+	c.workQueue.Forget(obj)
+	fmt.Printf("Successfully synced #%s", key)
+	return nil
+}
+
+func (c *CakeController) handle(key string) error {
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
 		utilRuntime.HandleError(fmt.Errorf("invalid resource key #%s", key))
