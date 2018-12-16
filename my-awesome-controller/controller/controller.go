@@ -49,7 +49,6 @@ func (c *CakeController) enqueue(obj interface{}) {
 		return
 	}
 
-	println("enqueue called", obj)
 	c.workQueue.AddRateLimited(key)
 }
 
@@ -75,7 +74,6 @@ func (c *CakeController) runWorker() {
 
 func (c *CakeController) processNextItem() bool {
 	obj, shutDown := c.workQueue.Get()
-	log.Println("got item from queue", obj, shutDown)
 	if shutDown {
 		return false
 	}
@@ -86,7 +84,6 @@ func (c *CakeController) processNextItem() bool {
 		var ok bool
 
 		if key, ok = obj.(string); !ok {
-			log.Println("unexpected obj ", obj)
 			c.workQueue.Forget(obj)
 			utilRuntime.HandleError(fmt.Errorf("expected string in workqueue, but got #%v", obj))
 			return nil
@@ -119,7 +116,6 @@ func (c *CakeController) syncHandler(key string) error {
 	cake, err := c.lister.Cakes(namespace).Get(name)
 	log.Println("got cake ", cake)
 	if err != nil {
-		log.Println("err while getting cake ", err)
 		if errors.IsNotFound(err) {
 			utilRuntime.HandleError(fmt.Errorf("'cake %s' in workqueue no longer exists", key))
 			return nil
@@ -128,7 +124,6 @@ func (c *CakeController) syncHandler(key string) error {
 	}
 
 	if c.db.Get(key) == nil {
-		log.Println("Adding cake")
 		c.db.Add(key, cake)
 	}
 

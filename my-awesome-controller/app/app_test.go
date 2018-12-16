@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 	defer cancel()
 
 	options := opts.DefaultOptions
-	informer := newFakeInformer(ctx)
+	informer := newFakeInformer()
 	application = app.New(&options, informer)
 	httptest.NewServer(application.ServerMux)
 	err := application.Run(ctx.Done())
@@ -57,7 +57,7 @@ func verify(expected *v1.Cake, actual *v1.Cake, t *testing.T) {
 	}
 }
 
-func newFakeInformer(ctx context.Context) v12.CakeInformer {
+func newFakeInformer() v12.CakeInformer {
 	client = fake.NewSimpleClientset()
 	informerFactory := externalversions.NewSharedInformerFactory(client, 0)
 	informer := informerFactory.Awesome().V1().Cakes()
