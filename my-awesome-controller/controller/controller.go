@@ -38,6 +38,9 @@ func New(informer v1.CakeInformer, database db.DB, clientSet clientSet.Interface
 
 	informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: cakeController.enqueue,
+		UpdateFunc: func(old, new interface{}) {
+			cakeController.enqueue(new)
+		},
 	})
 
 	return cakeController
@@ -102,7 +105,7 @@ func (c *CakeController) process(obj interface{}) error {
 		return nil
 	}
 
-	log.Println("calling sync handler")
+	log.Println("calling handle")
 	if err := c.handle(key); err != nil {
 		c.workQueue.AddRateLimited(key)
 		return fmt.Errorf("error syncing '%s': %s, requeuing", key, err.Error())
@@ -120,7 +123,6 @@ func (c *CakeController) handle(key string) error {
 	}
 
 	cake, err := c.lister.Cakes(namespace).Get(name)
-	log.Println("got cake ", cake)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			utilRuntime.HandleError(fmt.Errorf("'cake %s' in workqueue no longer exists", key))
@@ -129,13 +131,20 @@ func (c *CakeController) handle(key string) error {
 		return err
 	}
 
-	if c.db.Get(key) == nil {
+	dbValue := c.db.Get(key)
+
+	if dbValue == nil {
 		c.db.Add(key, cake)
 		err = c.updateStatus(cake, types.ADDED)
 		return err
+	} else {
+		if dbValue.Spec != cake.Spec {
+			c.db.Update(key, cake)
+			err = c.updateStatus(cake, types.UPDATED)
+			return err
+		}
+		return nil
 	}
-
-	return nil
 }
 
 func (c *CakeController) updateStatus(cake *types.Cake, state string) error {

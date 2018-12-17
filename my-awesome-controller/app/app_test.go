@@ -39,14 +39,36 @@ func TestMain(m *testing.M) {
 }
 
 func TestCreate(t *testing.T) {
+	cake := doCreate(t)
+
+	time.Sleep(20 * time.Second)
+	doUpdate(cake.Name, cake.Namespace, t)
+
+}
+
+func doCreate(t *testing.T) *v1.Cake {
 	cake, _ := createNewCake("black-forest", "bavaria", "choclate")
 	time.Sleep(10 * time.Millisecond)
+	fqn, _ := cache.MetaNamespaceKeyFunc(cake)
+	inDB := application.Database.Get(fqn)
+	verify(cake, inDB, t)
+	verifyState(v1.ADDED, inDB, t)
+	return cake
+}
+
+func doUpdate(name, namespace string, t *testing.T) {
+	cake, _ := get(name, namespace)
+	cakeCopy := cake.DeepCopy()
+	cakeCopy.Spec.Type = "vanilla"
+	updated, _ := updateCake(cakeCopy)
 
 	fqn, _ := cache.MetaNamespaceKeyFunc(cake)
-	actual := application.Database.Get(fqn)
+	time.Sleep(10 * time.Millisecond)
+	inDB := application.Database.Get(fqn)
 
-	verify(cake, actual, t)
-	verifyState(v1.ADDED, actual, t)
+	verify(updated, inDB, t)
+
+	verifyState(v1.UPDATED, inDB, t)
 }
 
 func verify(expected *v1.Cake, actual *v1.Cake, t *testing.T) {
@@ -60,10 +82,15 @@ func verify(expected *v1.Cake, actual *v1.Cake, t *testing.T) {
 }
 
 func verifyState(expected string, actual *v1.Cake, t *testing.T) {
-	cakeResource, _ := client.Awesome().Cakes(actual.Namespace).Get(actual.Name, metav1.GetOptions{})
+	time.Sleep(10 * time.Millisecond)
+	cakeResource, _ := get(actual.Name, actual.Namespace)
 	if expected != cakeResource.Status.State {
 		t.Errorf("state is not correct: want %s, have %s", expected, actual.Status.State)
 	}
+}
+
+func get(name, namespace string) (*v1.Cake, error) {
+	return client.Awesome().Cakes(namespace).Get(name, metav1.GetOptions{})
 }
 
 func newFakeInformer() (v12.CakeInformer, versioned.Interface) {
@@ -76,6 +103,10 @@ func newFakeInformer() (v12.CakeInformer, versioned.Interface) {
 
 func createNewCake(name string, namespace string, cakeType string) (*v1.Cake, error) {
 	return client.Awesome().Cakes(namespace).Create(getResource(name, namespace, cakeType))
+}
+
+func updateCake(cake *v1.Cake) (*v1.Cake, error) {
+	return client.Awesome().Cakes(cake.Namespace).Update(cake)
 }
 
 func getResource(name string, namespace string, cakeType string) *v1.Cake {
