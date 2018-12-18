@@ -1,0 +1,3 @@
+version: "1"
+domain: gaurav.io
+repo: github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder
