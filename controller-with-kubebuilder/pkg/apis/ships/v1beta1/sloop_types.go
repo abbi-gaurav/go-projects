@@ -27,12 +27,15 @@ import (
 type SloopSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	Rig string `json:"rig"`
 }
 
 // SloopStatus defines the observed state of Sloop
 type SloopStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	Configured bool `json:"configured"`
+	UpToDate   bool `json:"upToDate"`
 }
 
 // +genclient
