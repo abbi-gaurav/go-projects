@@ -6,6 +6,7 @@ WORKDIR /go/src/github.com/abbi-gaurav/go-learning-projects/controller-with-kube
 COPY pkg/    pkg/
 COPY cmd/    cmd/
 COPY vendor/ vendor/
+COPY db/     db/
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/cmd/manager

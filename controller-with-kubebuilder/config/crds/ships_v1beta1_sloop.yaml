@@ -11,6 +11,8 @@ spec:
     kind: Sloop
     plural: sloops
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       properties:
@@ -21,8 +23,21 @@ spec:
         metadata:
           type: object
         spec:
+          properties:
+            rig:
+              type: string
+          required:
+          - rig
           type: object
         status:
+          properties:
+            configured:
+              type: boolean
+            update:
+              type: boolean
+          required:
+          - configured
+          - update
           type: object
   version: v1beta1
 status:
