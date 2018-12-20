@@ -43,6 +43,7 @@ type SloopStatus struct {
 
 // Sloop is the Schema for the sloops API
 // +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
 type Sloop struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
