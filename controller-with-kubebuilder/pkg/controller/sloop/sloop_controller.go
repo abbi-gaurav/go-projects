@@ -18,6 +18,7 @@ package sloop
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
 	"github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/db"
@@ -82,8 +83,6 @@ type ReconcileSloop struct {
 
 // Reconcile reads that state of the cluster for a Sloop object and makes changes based on the state read
 // and what is in the Sloop.Spec
-// TODO(user): Modify this Reconcile function to implement your Controller logic.  The scaffolding writes
-// a Deployment as an example
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
 // +kubebuilder:rbac:groups=ships.gaurav.io,resources=sloops,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=ships.gaurav.io,resources=sloops/status,verbs=get;update;patch
@@ -141,7 +140,7 @@ func (r *ReconcileSloop) addExternal(instance *shipsv1beta1.Sloop, fqn string) e
 	database.Add(fqn, &instance.Spec)
 	instance.Status = shipsv1beta1.SloopStatus{
 		Configured: true,
-		Update:     true,
+		Update:     false,
 	}
 	err := r.Status().Update(context.TODO(), instance)
 	return err
@@ -159,7 +158,8 @@ func (r *ReconcileSloop) deleteExternalDependency(instance *shipsv1beta1.Sloop) 
 }
 
 func (r *ReconcileSloop) updateExternal(instance *shipsv1beta1.Sloop, found *shipsv1beta1.SloopSpec, fqn string) error {
-	if !reflect.DeepEqual(instance.Spec, found) {
+	if !reflect.DeepEqual(&instance.Spec, found) {
+		fmt.Println("updating object instance in db", instance.Spec, found)
 		newDBObj := instance.Spec
 		database.Update(fqn, &newDBObj)
 		instance.Status = shipsv1beta1.SloopStatus{
