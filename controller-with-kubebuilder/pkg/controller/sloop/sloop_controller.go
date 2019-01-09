@@ -18,6 +18,8 @@ package sloop
 
 import (
 	"context"
+	"reflect"
+
 	"github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/db"
 	shipsv1beta1 "github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/apis/ships/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -34,6 +36,8 @@ import (
 
 var log = logf.Log.WithName("controller")
 var database = db.New("memory")
+
+const finalizerName = "sloop.finalizer.ships.com"
 
 /**
 * USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
@@ -97,6 +101,27 @@ func (r *ReconcileSloop) Reconcile(request reconcile.Request) (reconcile.Result,
 		return reconcile.Result{}, err
 	}
 
+	if instance.ObjectMeta.DeletionTimestamp.IsZero() {
+		if !containsString(instance.ObjectMeta.Finalizers, finalizerName) {
+			instance.ObjectMeta.Finalizers = append(instance.ObjectMeta.Finalizers, finalizerName)
+		}
+
+		if err := r.Update(context.Background(), instance); err != nil {
+			return reconcile.Result{Requeue: true}, nil
+		}
+	} else {
+		if containsString(instance.ObjectMeta.Finalizers, finalizerName) {
+			if err := r.deleteExternalDependency(instance); err != nil {
+				return reconcile.Result{}, err
+			}
+			instance.ObjectMeta.Finalizers = removeString(instance.ObjectMeta.Finalizers, finalizerName)
+			if err := r.Update(context.Background(), instance); err != nil {
+				return reconcile.Result{Requeue: true}, nil
+			}
+		}
+		return reconcile.Result{}, nil
+	}
+
 	fqn, err := cache.MetaNamespaceKeyFunc(instance)
 	if err != nil {
 		return reconcile.Result{}, err
@@ -104,20 +129,65 @@ func (r *ReconcileSloop) Reconcile(request reconcile.Request) (reconcile.Result,
 
 	dbObj := database.Get(fqn)
 	if dbObj != nil {
-		database.Update(fqn, instance)
-		instance.Status = shipsv1beta1.SloopStatus{
-			Configured: true,
-			Update:     false,
-		}
-		err = r.Status().Update(context.TODO(), instance)
+		err = r.updateExternal(instance, dbObj, fqn)
 	} else {
-		database.Add(fqn, instance)
+		err = r.addExternal(instance, fqn)
+	}
+
+	return reconcile.Result{}, err
+}
+
+func (r *ReconcileSloop) addExternal(instance *shipsv1beta1.Sloop, fqn string) error {
+	database.Add(fqn, &instance.Spec)
+	instance.Status = shipsv1beta1.SloopStatus{
+		Configured: true,
+		Update:     true,
+	}
+	err := r.Status().Update(context.TODO(), instance)
+	return err
+}
+
+func (r *ReconcileSloop) deleteExternalDependency(instance *shipsv1beta1.Sloop) error {
+
+	fqn, err := cache.MetaNamespaceKeyFunc(instance)
+	if err != nil {
+		return err
+	}
+
+	database.Delete(fqn)
+	return nil
+}
+
+func (r *ReconcileSloop) updateExternal(instance *shipsv1beta1.Sloop, found *shipsv1beta1.SloopSpec, fqn string) error {
+	if !reflect.DeepEqual(instance.Spec, found) {
+		newDBObj := instance.Spec
+		database.Update(fqn, &newDBObj)
 		instance.Status = shipsv1beta1.SloopStatus{
 			Configured: true,
 			Update:     true,
 		}
-		err = r.Status().Update(context.TODO(), instance)
+		err := r.Status().Update(context.TODO(), instance)
+		return err
 	}
 
-	return reconcile.Result{}, err
+	return nil
+}
+
+func containsString(slice []string, s string) bool {
+	for _, item := range slice {
+		if item == s {
+			return true
+		}
+	}
+	return false
+}
+
+func removeString(slice []string, s string) (result []string) {
+	for _, item := range slice {
+		if item == s {
+			continue
+		}
+		result = append(result, item)
+	}
+	return
 }
