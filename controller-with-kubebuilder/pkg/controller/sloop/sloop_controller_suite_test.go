@@ -17,27 +17,27 @@ limitations under the License.
 package sloop
 
 import (
-	stdlog "log"
-	"os"
-	"path/filepath"
-	"sync"
-	"testing"
-
 	"github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/apis"
 	"github.com/onsi/gomega"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	stdlog "log"
+	"os"
+	"path/filepath"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sync"
+	"testing"
 )
 
 var cfg *rest.Config
 
 func TestMain(m *testing.M) {
 	t := &envtest.Environment{
-		CRDDirectoryPaths: []string{filepath.Join("..", "..", "..", "config", "crds")},
+		CRDDirectoryPaths:        []string{filepath.Join("..", "..", "..", "config", "crds")},
 	}
+
 	apis.AddToScheme(scheme.Scheme)
 
 	var err error
