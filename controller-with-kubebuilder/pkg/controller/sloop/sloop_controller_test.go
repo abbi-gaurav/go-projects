@@ -17,6 +17,7 @@ limitations under the License.
 package sloop
 
 import (
+	"fmt"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/cache"
 	"testing"
@@ -67,12 +68,9 @@ func TestReconcile(t *testing.T) {
 		mgrStopped.Wait()
 	}()
 
-	err = c.Create(context.TODO(), instance)
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
-
 	fqn, _ := cache.MetaNamespaceKeyFunc(instance)
-	g.Expect(database.Get(fqn)).To(gomega.Equal(&instance.Spec))
+
+	create(g, instance, requests, fqn)
 
 	g.Eventually(get(depKey, g).Finalizers, timeout).ShouldNot(gomega.BeNil())
 
@@ -80,6 +78,13 @@ func TestReconcile(t *testing.T) {
 
 	remove(fqn, instance, g, requests)
 
+}
+
+func create(g *gomega.GomegaWithT, instance *shipsv1beta1.Sloop, requests chan reconcile.Request, fqn string) {
+	err := c.Create(context.TODO(), instance)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+	g.Eventually(database.Get(fqn)).Should(gomega.Equal(&instance.Spec))
 }
 
 func get(key client.ObjectKey, g *gomega.GomegaWithT) *shipsv1beta1.Sloop {
@@ -118,14 +123,15 @@ func remove(fqn string, instance *shipsv1beta1.Sloop, g *gomega.GomegaWithT, req
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
 
-	time.Sleep(500 * time.Millisecond)
-	g.Eventually(verifyDelete(depKey), timeout).Should(gomega.Equal(true))
+	time.Sleep(1000 * time.Millisecond)
+	g.Eventually(verifyDelete(depKey), timeout, 200*time.Millisecond).Should(gomega.Equal(true))
 
 	g.Eventually(database.Get(fqn), timeout).Should(gomega.BeNil())
 }
 
 func verifyDelete(key client.ObjectKey) bool {
 	obj := doGet(key)
+
 	if obj.err != nil && errors.IsNotFound(obj.err) {
 		return true
 	}
@@ -133,6 +139,7 @@ func verifyDelete(key client.ObjectKey) bool {
 	if len(obj.obj.Finalizers) == 0 {
 		return true
 	}
+	fmt.Printf("%+v\n", obj)
 
 	return false
 }
