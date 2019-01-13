@@ -38,12 +38,15 @@ type instanceWithError struct {
 	err error
 }
 
+type shouldRetry struct {
+	flag bool
+	err  error
+}
+
 var c client.Client
 
 var expectedRequest = reconcile.Request{NamespacedName: types.NamespacedName{Name: "foo", Namespace: "default"}}
 var depKey = types.NamespacedName{Name: "foo", Namespace: "default"}
-
-const timeout = time.Second * 10
 
 func TestReconcile(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
@@ -72,7 +75,7 @@ func TestReconcile(t *testing.T) {
 
 	create(g, instance, requests, fqn)
 
-	g.Eventually(get(depKey, g).Finalizers, timeout).ShouldNot(gomega.BeNil())
+	g.Eventually(get(depKey, g).Finalizers).ShouldNot(gomega.BeNil())
 
 	update(depKey, g, "updated", requests, fqn)
 
@@ -83,7 +86,7 @@ func TestReconcile(t *testing.T) {
 func create(g *gomega.GomegaWithT, instance *shipsv1beta1.Sloop, requests chan reconcile.Request, fqn string) {
 	err := c.Create(context.TODO(), instance)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+	g.Eventually(requests).Should(gomega.Receive(gomega.Equal(expectedRequest)))
 	g.Eventually(database.Get(fqn)).Should(gomega.Equal(&instance.Spec))
 }
 
@@ -103,43 +106,52 @@ func doGet(key client.ObjectKey) instanceWithError {
 }
 
 func update(key client.ObjectKey, g *gomega.GomegaWithT, newRig string, requests chan reconcile.Request, fqn string) {
-	time.Sleep(10 * time.Second)
-	err := doUpdate(key, g, newRig, requests)
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-	time.Sleep(500 * time.Millisecond)
-	g.Eventually(database.Get(fqn).Rig, timeout).Should(gomega.Equal(newRig))
+	time.Sleep(200 * time.Millisecond)
+	g.Eventually(func() shouldRetry { return doUpdate(key, g, newRig, requests) }).Should(gomega.Equal(shouldRetry{flag: false, err: nil}))
+	g.Eventually(func() string { return database.Get(fqn).Rig }).Should(gomega.Equal(newRig))
 }
 
-func doUpdate(key client.ObjectKey, g *gomega.GomegaWithT, newRig string, requests chan reconcile.Request) error {
+func doUpdate(key client.ObjectKey, g *gomega.GomegaWithT, newRig string, requests chan reconcile.Request) shouldRetry {
 	obj := get(key, g)
 	obj.Spec.Rig = newRig
 	err := c.Update(context.TODO(), obj)
-	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
-	return err
+	g.Eventually(requests).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+	if err != nil {
+		println(err)
+		if errors.IsConflict(err) {
+			return shouldRetry{flag: true, err: nil}
+		} else {
+			return shouldRetry{flag: true, err: err}
+		}
+	}
+	return shouldRetry{flag: false, err: nil}
 }
 
 func remove(fqn string, instance *shipsv1beta1.Sloop, g *gomega.GomegaWithT, requests chan reconcile.Request) {
 	err := c.Delete(context.TODO(), instance)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Eventually(requests, timeout).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+	g.Eventually(requests).Should(gomega.Receive(gomega.Equal(expectedRequest)))
 
-	time.Sleep(1000 * time.Millisecond)
-	g.Eventually(verifyDelete(depKey), timeout, 200*time.Millisecond).Should(gomega.Equal(true))
+	g.Eventually(func() shouldRetry { return verifyRemove(depKey) }).Should(gomega.Equal(shouldRetry{flag: false, err: nil}))
 
-	g.Eventually(database.Get(fqn), timeout).Should(gomega.BeNil())
+	g.Eventually(func() *shipsv1beta1.SloopSpec { return database.Get(fqn) }).Should(gomega.BeNil())
+
 }
 
-func verifyDelete(key client.ObjectKey) bool {
+func verifyRemove(key client.ObjectKey) shouldRetry {
 	obj := doGet(key)
 
-	if obj.err != nil && errors.IsNotFound(obj.err) {
-		return true
+	if obj.err != nil {
+		if errors.IsNotFound(obj.err) {
+			return shouldRetry{flag: false, err: nil}
+		} else {
+			return shouldRetry{flag: true, err: obj.err}
+		}
+	} else if len(obj.obj.Finalizers) == 0 {
+		fmt.Printf("%+v\n", obj.obj)
+		return shouldRetry{flag: false, err: nil}
+	} else {
+		fmt.Printf("%+v\n", obj.obj)
+		return shouldRetry{flag: true}
 	}
-
-	if len(obj.obj.Finalizers) == 0 {
-		return true
-	}
-	fmt.Printf("%+v\n", obj)
-
-	return false
 }

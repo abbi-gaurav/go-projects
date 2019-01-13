@@ -147,12 +147,11 @@ func (r *ReconcileSloop) addExternal(instance *shipsv1beta1.Sloop, fqn string) e
 }
 
 func (r *ReconcileSloop) deleteExternalDependency(instance *shipsv1beta1.Sloop) error {
-
 	fqn, err := cache.MetaNamespaceKeyFunc(instance)
 	if err != nil {
 		return err
 	}
-
+	fmt.Printf("delete called\n")
 	database.Delete(fqn)
 	return nil
 }

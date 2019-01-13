@@ -29,24 +29,29 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sync"
 	"testing"
+	"time"
 )
 
 var cfg *rest.Config
 
 func TestMain(m *testing.M) {
 	t := &envtest.Environment{
-		CRDDirectoryPaths:        []string{filepath.Join("..", "..", "..", "config", "crds")},
+		CRDDirectoryPaths: []string{filepath.Join("..", "..", "..", "config", "crds")},
 	}
 
-	apis.AddToScheme(scheme.Scheme)
-
 	var err error
+
+	err = apis.AddToScheme(scheme.Scheme)
+	stdlog.Println(err)
+
 	if cfg, err = t.Start(); err != nil {
 		stdlog.Fatal(err)
 	}
+	time.Sleep(500 * time.Millisecond)
 
 	code := m.Run()
-	t.Stop()
+	err = t.Stop()
+	stdlog.Println(err)
 	os.Exit(code)
 }
 
