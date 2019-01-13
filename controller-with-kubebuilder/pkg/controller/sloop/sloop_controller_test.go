@@ -18,19 +18,17 @@ package sloop
 
 import (
 	"fmt"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/client-go/tools/cache"
-	"testing"
-	"time"
-
 	shipsv1beta1 "github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/apis/ships/v1beta1"
 	"github.com/onsi/gomega"
 	"golang.org/x/net/context"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"testing"
 )
 
 type instanceWithError struct {
@@ -106,7 +104,6 @@ func doGet(key client.ObjectKey) instanceWithError {
 }
 
 func update(key client.ObjectKey, g *gomega.GomegaWithT, newRig string, requests chan reconcile.Request, fqn string) {
-	time.Sleep(200 * time.Millisecond)
 	g.Eventually(func() shouldRetry { return doUpdate(key, g, newRig, requests) }).Should(gomega.Equal(shouldRetry{flag: false, err: nil}))
 	g.Eventually(func() string { return database.Get(fqn).Rig }).Should(gomega.Equal(newRig))
 }
@@ -128,7 +125,7 @@ func doUpdate(key client.ObjectKey, g *gomega.GomegaWithT, newRig string, reques
 }
 
 func remove(fqn string, instance *shipsv1beta1.Sloop, g *gomega.GomegaWithT, requests chan reconcile.Request) {
-	err := c.Delete(context.TODO(), instance)
+	err := c.Delete(context.TODO(), instance, client.GracePeriodSeconds(0))
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Eventually(requests).Should(gomega.Receive(gomega.Equal(expectedRequest)))
 
