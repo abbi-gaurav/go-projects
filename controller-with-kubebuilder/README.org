@@ -1,0 +1,77 @@
+* Writing controller is hard
+** too much low level details
+** update, create and delete callbacks
+** difficult to handle all edge cases
+** writing tests is a pain
+** lots of manual steps
+- create CRD
+- update dependencies to get correct ~code-generator~
+- run script to generate code
+** generated code is brittle and easily breaks with upgrades
+- informers
+- listers
+- ...
+* Enter kubebuilder
+** a project under core-sig-api
+** built on top of runtime-controller library
+** better tooling with less manual steps
+#+begin_src bash
+  # initializes a go project
+  kubebuilder init --domain cakes.io --license apache2 --owner "Gaurav Abbi"
+
+  # create an api a.k.a custom resource
+  kubebuilder create api --group ships --version v1beta1 --kind Sloop
+#+end_src
+** generated skelton
+[[./assets/project-structure.png]]
+** Auto-generated [[file://Users/d066419/go/src/github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/Makefile][Makefile]] 
+- lots of util tasks
+- deploy to cluster
+- generate manifets
+- ...
+** Auto-generated skelton tests
+* Developer only updates the type definition
+** CRD definition is updated accordingly by running make tasks
+** [[file://Users/d066419/go/src/github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/apis/ships/v1beta1/sloop_types.go][Type Definition]]
+** [[file://Users/d066419/go/src/github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/config/crds/ships_v1beta1_sloop.yaml][Generated CRD]]
+* Adding the controller logic
+** [[/Users/d066419/go/src/github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/controller/sloop/sloop_controller.go][Reconcile API]]
+#+begin_src bash
+  func (r *ReconcileSloop) Reconcile(request reconcile.Request) (reconcile.Result, error) {}
+#+end_src
+** no create
+** no update
+** no delete
+** only a ~request object~
+** developer needs to write logic to deduce
+- create
+  - ~use e.g query to db if the obj exists or not to decide on create~
+- update
+  - ~use e.g differnce is spec object to decide if update needs to be done~
+- delete
+** same event can come multiple times
+** controller logic must be written in a idempotent way
+** In case of failures, ~Requeue~ to process the request again
+** Think of this like an ~at-least-once delivery~ :)
+* Deletion and Finalizer
+** always add the finalizer first
+** check if deletion needs to be done as the next step
+** if deleted, return from there
+* Writing Tests
+** kubebuilder supports providing a control plane and etcd
+** They are binaries bundled with the kubebuilder executable
+- Add  the env variable ~KUBEBUILDER_ASSETS=<kubebuilder bin path>~
+** The test will start the api server using 
+- kubectl
+- etcd and other utils in the path
+** Developer will create, update and delete custom resource
+** This will invoke the controller logic
+- Closest I have found the simulation of actual K8S for controller testing
+** One can verify against multiple kubernetes versions by using different kubectl
+** kubernetes is all about eventual consistency
+- use ~gomega.Eventually~ to verify your assertions
+** [[/Users/d066419/go/src/github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/controller/sloop/sloop_controller_test.go][a sample]]
+** this implies the CI needs to have these binaries
+
+* Refer
+** [[http://kubebuilder.netlify.com][kubebuilder book]]

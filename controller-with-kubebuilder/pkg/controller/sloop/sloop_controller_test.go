@@ -43,13 +43,13 @@ type shouldRetry struct {
 
 var c client.Client
 
-var expectedRequest = reconcile.Request{NamespacedName: types.NamespacedName{Name: "foo", Namespace: "default"}}
 var depKey = types.NamespacedName{Name: "foo", Namespace: "default"}
+var expectedRequest = reconcile.Request{NamespacedName: depKey}
 
 func TestReconcile(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 	instance := &shipsv1beta1.Sloop{
-		ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "default"},
+		ObjectMeta: metav1.ObjectMeta{Name: depKey.Name, Namespace: depKey.Namespace},
 		Spec:       shipsv1beta1.SloopSpec{Rig: "test-rig"},
 	}
 
