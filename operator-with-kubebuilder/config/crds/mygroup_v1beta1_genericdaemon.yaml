@@ -11,6 +11,8 @@ spec:
     kind: GenericDaemon
     plural: genericdaemons
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       properties:
@@ -27,8 +29,27 @@ spec:
         metadata:
           type: object
         spec:
+          properties:
+            image:
+              type: string
+            label:
+              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                Important: Run "make" to regenerate code after modifying this file'
+              type: string
+          required:
+          - label
+          - image
           type: object
         status:
+          properties:
+            count:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
+              format: int32
+              type: integer
+          required:
+          - count
           type: object
   version: v1beta1
 status:
