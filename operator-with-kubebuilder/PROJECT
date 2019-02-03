@@ -1,0 +1,3 @@
+version: "1"
+domain: gabbi.io
+repo: github.com/abbi-gaurav/go-learning-projects/operator-with-kubebuilder
