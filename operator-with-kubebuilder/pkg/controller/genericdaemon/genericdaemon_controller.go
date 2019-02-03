@@ -159,7 +159,7 @@ func (r *ReconcileGenericDaemon) Reconcile(request reconcile.Request) (reconcile
 	if found.Status.NumberReady != instance.Status.Count {
 		log.Info("Updating status %s/%s\n", instance.Namespace, instance.Name)
 		instance.Status.Count = found.Status.NumberReady
-		err = r.Update(context.TODO(), instance)
+		err = r.Status().Update(context.TODO(), instance)
 		if err != nil {
 			return reconcile.Result{}, err
 		}

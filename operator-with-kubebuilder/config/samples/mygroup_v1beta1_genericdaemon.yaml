@@ -5,5 +5,5 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: genericdaemon-sample
 spec:
-  # Add fields here
-  foo: bar
+  image: httpd
+  label: http

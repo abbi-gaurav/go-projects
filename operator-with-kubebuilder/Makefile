@@ -50,3 +50,7 @@ docker-build: test
 # Push the docker image
 docker-push:
 	docker push ${IMG}
+
+undeploy:
+	kustomize build config/default | kubectl delete -f -
+	kubectl delete -f config/crds
