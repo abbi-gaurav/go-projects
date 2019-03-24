@@ -24,7 +24,7 @@
 #+end_src
 ** generated skelton
 [[./assets/project-structure.png]]
-** Auto-generated [[file://Users/d066419/go/src/github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/Makefile][Makefile]] 
+** Auto-generated [[./Makefile][Makefile]]
 - lots of util tasks
 - deploy to cluster
 - generate manifets
@@ -32,10 +32,10 @@
 ** Auto-generated skelton tests
 * Developer only updates the type definition
 ** CRD definition is updated accordingly by running make tasks
-** [[file://Users/d066419/go/src/github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/apis/ships/v1beta1/sloop_types.go][Type Definition]]
-** [[file://Users/d066419/go/src/github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/config/crds/ships_v1beta1_sloop.yaml][Generated CRD]]
+** [[./pkg/apis/ships/v1beta1/sloop_types.go][Type Definition]]
+** [[./config/crds/ships_v1beta1_sloop.yaml][Generated CRD]]
 * Adding the controller logic
-** [[/Users/d066419/go/src/github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/controller/sloop/sloop_controller.go][Reconcile API]]
+** [[./pkg/controller/sloop/sloop_controller.go][Reconcile API]]
 #+begin_src bash
   func (r *ReconcileSloop) Reconcile(request reconcile.Request) (reconcile.Result, error) {}
 #+end_src
@@ -70,7 +70,7 @@
 ** One can verify against multiple kubernetes versions by using different kubectl
 ** kubernetes is all about eventual consistency
 - use ~gomega.Eventually~ to verify your assertions
-** [[/Users/d066419/go/src/github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/controller/sloop/sloop_controller_test.go][a sample]]
+** [[./pkg/controller/sloop/sloop_controller_test.go][a sample]]
 ** this implies the CI needs to have these binaries
 
 * Refer

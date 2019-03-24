@@ -37,8 +37,8 @@ type instanceWithError struct {
 }
 
 type shouldRetry struct {
-	flag bool
-	err  error
+	objectMayExist bool
+	err            error
 }
 
 var c client.Client
@@ -75,7 +75,7 @@ func TestReconcile(t *testing.T) {
 
 	g.Eventually(get(depKey, g).Finalizers).ShouldNot(gomega.BeNil())
 
-	update(depKey, g, "updated", requests, fqn)
+	//update(depKey, g, "updated", requests, fqn)
 
 	remove(fqn, instance, g, requests)
 
@@ -104,7 +104,7 @@ func doGet(key client.ObjectKey) instanceWithError {
 }
 
 func update(key client.ObjectKey, g *gomega.GomegaWithT, newRig string, requests chan reconcile.Request, fqn string) {
-	g.Eventually(func() shouldRetry { return doUpdate(key, g, newRig, requests) }).Should(gomega.Equal(shouldRetry{flag: false, err: nil}))
+	g.Eventually(func() shouldRetry { return doUpdate(key, g, newRig, requests) }).Should(gomega.Equal(shouldRetry{objectMayExist: false, err: nil}))
 	g.Eventually(func() string { return database.Get(fqn).Rig }).Should(gomega.Equal(newRig))
 }
 
@@ -116,12 +116,12 @@ func doUpdate(key client.ObjectKey, g *gomega.GomegaWithT, newRig string, reques
 	if err != nil {
 		println(err)
 		if errors.IsConflict(err) {
-			return shouldRetry{flag: true, err: nil}
+			return shouldRetry{objectMayExist: true, err: nil}
 		} else {
-			return shouldRetry{flag: true, err: err}
+			return shouldRetry{objectMayExist: true, err: err}
 		}
 	}
-	return shouldRetry{flag: false, err: nil}
+	return shouldRetry{objectMayExist: false, err: nil}
 }
 
 func remove(fqn string, instance *shipsv1beta1.Sloop, g *gomega.GomegaWithT, requests chan reconcile.Request) {
@@ -129,7 +129,7 @@ func remove(fqn string, instance *shipsv1beta1.Sloop, g *gomega.GomegaWithT, req
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Eventually(requests).Should(gomega.Receive(gomega.Equal(expectedRequest)))
 
-	g.Eventually(func() shouldRetry { return verifyRemove(depKey) }).Should(gomega.Equal(shouldRetry{flag: false, err: nil}))
+	g.Eventually(func() shouldRetry { return verifyRemove(depKey) }).Should(gomega.Equal(shouldRetry{objectMayExist: false, err: nil}))
 
 	g.Eventually(func() *shipsv1beta1.SloopSpec { return database.Get(fqn) }).Should(gomega.BeNil())
 
@@ -140,15 +140,15 @@ func verifyRemove(key client.ObjectKey) shouldRetry {
 
 	if obj.err != nil {
 		if errors.IsNotFound(obj.err) {
-			return shouldRetry{flag: false, err: nil}
+			return shouldRetry{objectMayExist: false, err: nil}
 		} else {
-			return shouldRetry{flag: true, err: obj.err}
+			return shouldRetry{objectMayExist: true, err: obj.err}
 		}
 	} else if len(obj.obj.Finalizers) == 0 {
 		fmt.Printf("%+v\n", obj.obj)
-		return shouldRetry{flag: false, err: nil}
+		return shouldRetry{objectMayExist: false, err: nil}
 	} else {
 		fmt.Printf("%+v\n", obj.obj)
-		return shouldRetry{flag: true}
+		return shouldRetry{objectMayExist: true}
 	}
 }

@@ -100,6 +100,9 @@ func (r *ReconcileSloop) Reconcile(request reconcile.Request) (reconcile.Result,
 		return reconcile.Result{}, err
 	}
 
+	//make a deep copy and use that
+	instance = instance.DeepCopy()
+
 	if instance.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !containsString(instance.ObjectMeta.Finalizers, finalizerName) {
 			instance.ObjectMeta.Finalizers = append(instance.ObjectMeta.Finalizers, finalizerName)
