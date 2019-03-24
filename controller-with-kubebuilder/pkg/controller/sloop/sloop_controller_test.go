@@ -28,12 +28,22 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sync"
 	"testing"
 )
 
 type instanceWithError struct {
 	obj *shipsv1beta1.Sloop
 	err error
+}
+
+type testDriver struct {
+	manager        manager.Manager
+	requestChannel chan reconcile.Request
+	stopMgr        chan struct{}
+	mgrStopped     *sync.WaitGroup
+	g              *gomega.GomegaWithT
+	depKey         types.NamespacedName
 }
 
 type shouldRetry struct {
@@ -43,16 +53,45 @@ type shouldRetry struct {
 
 var c client.Client
 
-var depKey = types.NamespacedName{Name: "foo", Namespace: "default"}
-var expectedRequest = reconcile.Request{NamespacedName: depKey}
+func TestCreateDelete(t *testing.T) {
+	td := testSetUp(t, "test-create-default")
+	g := td.g
 
-func TestReconcile(t *testing.T) {
+	instance := td.getInstanceObj("test-rig")
+
+	defer func() {
+		td.close()
+	}()
+
+	fqn, _ := cache.MetaNamespaceKeyFunc(instance)
+
+	td.create(instance, fqn)
+	g.Eventually(get(td.depKey, g).Finalizers).ShouldNot(gomega.BeNil())
+	td.remove(fqn, instance)
+
+}
+
+func TestCreateUpdate(t *testing.T) {
+	td := testSetUp(t, "test-create-update")
+
+	defer func() {
+		td.close()
+	}()
+
+	instance := td.getInstanceObj("test-update")
+	fqn, _ := cache.MetaNamespaceKeyFunc(instance)
+
+	td.create(instance, fqn)
+	td.update("updated", fqn)
+}
+
+func (td *testDriver) close() {
+	close(td.stopMgr)
+	td.mgrStopped.Wait()
+}
+
+func testSetUp(t *testing.T, name string) *testDriver {
 	g := gomega.NewGomegaWithT(t)
-	instance := &shipsv1beta1.Sloop{
-		ObjectMeta: metav1.ObjectMeta{Name: depKey.Name, Namespace: depKey.Namespace},
-		Spec:       shipsv1beta1.SloopSpec{Rig: "test-rig"},
-	}
-
 	// Setup the Manager and Controller.  Wrap the Controller Reconcile function so it writes each request to a
 	// channel when it is finished.
 	mgr, err := manager.New(cfg, manager.Options{})
@@ -64,27 +103,30 @@ func TestReconcile(t *testing.T) {
 
 	stopMgr, mgrStopped := StartTestManager(mgr, g)
 
-	defer func() {
-		close(stopMgr)
-		mgrStopped.Wait()
-	}()
-
-	fqn, _ := cache.MetaNamespaceKeyFunc(instance)
-
-	create(g, instance, requests, fqn)
-
-	g.Eventually(get(depKey, g).Finalizers).ShouldNot(gomega.BeNil())
-
-	//update(depKey, g, "updated", requests, fqn)
-
-	remove(fqn, instance, g, requests)
+	return &testDriver{
+		manager:        mgr,
+		requestChannel: requests,
+		stopMgr:        stopMgr,
+		mgrStopped:     mgrStopped,
+		g:              g,
+		depKey:         types.NamespacedName{Name: name, Namespace: "default"},
+	}
 
 }
 
-func create(g *gomega.GomegaWithT, instance *shipsv1beta1.Sloop, requests chan reconcile.Request, fqn string) {
+func (td *testDriver) getInstanceObj(rig string) *shipsv1beta1.Sloop {
+	return &shipsv1beta1.Sloop{
+		ObjectMeta: metav1.ObjectMeta{Name: td.depKey.Name, Namespace: td.depKey.Namespace},
+		Spec:       shipsv1beta1.SloopSpec{Rig: rig},
+	}
+}
+
+func (td *testDriver) create(instance *shipsv1beta1.Sloop, fqn string) {
+	g := td.g
+	requests := td.requestChannel
 	err := c.Create(context.TODO(), instance)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Eventually(requests).Should(gomega.Receive(gomega.Equal(expectedRequest)))
+	g.Eventually(requests).Should(gomega.Receive(gomega.Equal(reconcile.Request{NamespacedName: td.depKey})))
 	g.Eventually(database.Get(fqn)).Should(gomega.Equal(&instance.Spec))
 }
 
@@ -103,12 +145,17 @@ func doGet(key client.ObjectKey) instanceWithError {
 	}
 }
 
-func update(key client.ObjectKey, g *gomega.GomegaWithT, newRig string, requests chan reconcile.Request, fqn string) {
-	g.Eventually(func() shouldRetry { return doUpdate(key, g, newRig, requests) }).Should(gomega.Equal(shouldRetry{objectMayExist: false, err: nil}))
+func (td *testDriver) update(newRig string, fqn string) {
+	g := td.g
+	g.Eventually(func() shouldRetry { return td.doUpdate(newRig) }).Should(gomega.Equal(shouldRetry{objectMayExist: false, err: nil}))
 	g.Eventually(func() string { return database.Get(fqn).Rig }).Should(gomega.Equal(newRig))
 }
 
-func doUpdate(key client.ObjectKey, g *gomega.GomegaWithT, newRig string, requests chan reconcile.Request) shouldRetry {
+func (td *testDriver) doUpdate(newRig string) shouldRetry {
+	g := td.g
+	key := td.depKey
+	requests := td.requestChannel
+	expectedRequest := reconcile.Request{NamespacedName: key}
 	obj := get(key, g)
 	obj.Spec.Rig = newRig
 	err := c.Update(context.TODO(), obj)
@@ -124,7 +171,11 @@ func doUpdate(key client.ObjectKey, g *gomega.GomegaWithT, newRig string, reques
 	return shouldRetry{objectMayExist: false, err: nil}
 }
 
-func remove(fqn string, instance *shipsv1beta1.Sloop, g *gomega.GomegaWithT, requests chan reconcile.Request) {
+func (td *testDriver) remove(fqn string, instance *shipsv1beta1.Sloop) {
+	g := td.g
+	requests := td.requestChannel
+	depKey := td.depKey
+	expectedRequest := reconcile.Request{NamespacedName: depKey}
 	err := c.Delete(context.TODO(), instance, client.GracePeriodSeconds(0))
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Eventually(requests).Should(gomega.Receive(gomega.Equal(expectedRequest)))
