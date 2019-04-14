@@ -1,0 +1,8 @@
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: my-service-trigger
+spec:
+  broker: sample-broker
+  subscriber:
+    dnsName: http://dummy-subscriber.default.svc.cluster.local:8080/v1/events
