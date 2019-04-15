@@ -12,6 +12,12 @@ kubectl apply -f ./config/subscriber-deployment.yaml
 
 ## Knative deployments
 
+* Annotate your namespace
+
+```bash
+kubectl label namespace default knative-eventing-injection=enabled
+```
+
 * Deploy Knative broker
 
 ```bash
