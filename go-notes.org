@@ -31,8 +31,23 @@
 ~}~
 * Data Structures
 - write code that is symphatetic with cache system
-* goroutine
+* interfaces
+- if you implement an interface using a pointer receiver, then only pointers of that type implement the interface. If you implement an interface using a value receiver, then both values and pointers of that type implement the interface.
+* type embedding
+- take existing types and both extend and change their behavior.
+- It works by taking an existing type and declaring that type within the declaration of a new struct type.
+- The type that is embedded is then called an inner type of the new outer type.
+* concurrency
+- /Concurrency is a property of the code; parallelism is a property of the running program./
+- *Communicating Sequential Processes*
+- /Do not communicate by sharing memory. Instead, share memory by communicating./
+- /aim for simplicity, use channels when possible, and treat goroutines like a free resource./
+** goroutine
+- a goroutine is a coroutine (concurrent subroutine) that are nonpreemptive
 - When a function is created as a goroutine, it’s treated as an independent unit of work that gets scheduled and then executed on an available logical processor
+- /M:N scheduler/
+  - m green threads --> n os threads
+- *fork-join model*
 - go runtime scheduler
   - manages goroutines
   - sits on top of the operating system
@@ -47,16 +62,46 @@
 - IO call
   - the goroutine is detached from the logical processor and moved to the runtime integrated network poller.
   - once poller indicates read/write op is ready, goroutine is assigned back to the logical processor.
-* Channels
+*** pass a copy
+#+begin_src go 
+  var wg sync.WaitGroup
+  for _, salutation := range []string{"hello", "greetings", "good day"} {
+          wg.Add(1)
+          go func(salutation string) {
+                  defer wg.Done()
+                  fmt.Println(salutation)
+          }(salutation)
+  }
+  wg.Wait()
+#+end_src
+** sync
+- *waitGroup*
+- *Mutex & RWMutex*
+  - call ~Unlock~ with defer statement.
+  - ensure it runs even for panic
+- *cond*
+  - one or more goroutine waits for a condition
+  - ~.Signal~ for one goroutine waiting
+  - ~.Broadcast~ for multiple goroutines in ~FIFO~ order
+  - call ~.Wait~ automatically unlocks
+  - exiting ~.Wait~ automatically locks
+- *Once*
+- *pool*
+  - object pool design pattern is best used either when you have concurrent processes that require objects, but dispose of them very rapidly after instantiation, or when construction of these objects could negatively impact memory.
+** channels
 - unbuffered channel
   - is a channel with no capacity to hold any value before it’s received
   - sending and receiving goroutine to be ready at the same instant before any send or receive operation can complete.
 - synchronize goroutines as they send and receive the resources they need to share between each other.
 - When a resource needs to be shared between goroutines, channels act as a conduit between the goroutines and provide a mechanism that guarantees a synchronous exchange.
 - When a channel is closed, goroutines can still perform receives on the channel but can no longer send on the channel
-* interfaces
-- if you implement an interface using a pointer receiver, then only pointers of that type implement the interface. If you implement an interface using a value receiver, then both values and pointers of that type implement the interface.
-* type embedding
-- take existing types and both extend and change their behavior.
-- It works by taking an existing type and declaring that type within the declaration of a new struct type.
-- The type that is embedded is then called an inner type of the new outer type.
+- *range*
+  - read all values until channel is closed
+- *close*
+  - notify multiple goroutines
+  - closed channel can be read infinite number of times
+- *select*
+  - glue that bind channels together
+  - compose channels
+  - /all channel reads and writes are considered simultaneously/
+  - /perform a pseudo-random uniform selection over the set of case statements/

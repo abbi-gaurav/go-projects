@@ -1,0 +1,38 @@
+package main
+
+import (
+	"fmt"
+	"runtime"
+	"sync"
+)
+
+func memConsumed() uint64 {
+	runtime.GC()
+	var s runtime.MemStats
+	runtime.ReadMemStats(&s)
+	return s.Sys
+}
+
+var c <-chan interface{}
+var wg sync.WaitGroup
+
+func noop()  {
+	wg.Done()
+	<-c
+}
+
+const numGoroutines  = 1e4
+
+func main() {
+	wg.Add(numGoroutines)
+	before := memConsumed()
+
+	for i := numGoroutines; i > 0; i--  {
+		go noop()
+	}
+
+	wg.Wait()
+	after := memConsumed()
+
+	fmt.Printf("%.3fkb", float64(after - before)/numGoroutines/1000)
+}
