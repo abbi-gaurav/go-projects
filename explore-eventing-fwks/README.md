@@ -1,8 +1,16 @@
 # Overview
 
-A dummy subscriber that can be used for debugging and troubleshooting event delivery
+This project contains code and configurations to explore various eventing frameworks such as
 
-It exposes a **REST API** `POST /v1/events` for receiving the events.
+* Kyma eventing
+* Knative eventing
+* more to come
+
+General idea is to:
+ 
+* Deploy a susbcriber app that can consume the events
+* Do the necessary configuration required for the framework.
+* Send an event via a K8S pod using curl.
 
 ## Deploy Subscriber
 
@@ -10,25 +18,10 @@ It exposes a **REST API** `POST /v1/events` for receiving the events.
 kubectl apply -f ./config/subscriber-deployment.yaml
 ```
 
-## Knative deployments
+## Framework configuration
 
-* Annotate your namespace
+* [knative-eventing](./knative-eventing.md)
 
-```bash
-kubectl label namespace default knative-eventing-injection=enabled
-```
-
-* Deploy Knative broker
-
-```bash
-kubectl apply -f ./config/knative-broker.yaml
-```
-
-* Deploy Knative trigger
-
-```bash
-kubectl apply -f ./config/knative-trigger.yaml
-```
 
 ## Publish event
 
@@ -51,4 +44,9 @@ curl -v "http://sample-broker-broker.default.svc.cluster.local/" \
   -H "CE-Source: sample-external-solution" \
   -H 'Content-Type: application/json' \
   -d '{ "much": "wow" }'
+```
+## Verify the subscriber logs
+
+```bash
+kubectl logs -l app=dummy-subscriber -c dummy-subscriber
 ```
