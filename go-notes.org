@@ -121,3 +121,24 @@
 - *pipelines*
   - /batch processing/ : all values in the container (e.g. list)
   - /sream processing/ : one value at a time
+- *queue*
+  - introducing a queue isn’t that the runtime of one of stages has been reduced, but rather that the time it’s in a blocking state is reduced.
+  - decouple stages so that the runtime of one stage has no impact on the runtime of another.
+  - if queuing can increase the overall performance of the system
+    - If batching requests in a stage saves time
+    - If delays in a stage produce a feedback loop into the system.
+      - used for negative feedback loop or death spiral
+      - add queue at the entrance of the pipeline
+*** Little's law
+#+begin_src 
+L = avg num of units in system
+
+r = avg arrival rate of units
+
+w = avg time a unit spends in system
+#+end_src
+*** context package
+- A goroutine’s parent may want to cancel it.
+- A goroutine may want to cancel its children.
+- Any blocking operations within a goroutine need to be preemptable so that it may be canceled.
+
