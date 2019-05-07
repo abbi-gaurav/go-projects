@@ -1,0 +1,6 @@
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Channel
+metadata:
+  name: natss-as-default
+  namespace: default
+spec: {}
