@@ -124,7 +124,7 @@ func (td *testDriver) getInstanceObj(rig string) *shipsv1beta1.Sloop {
 func (td *testDriver) create(instance *shipsv1beta1.Sloop, fqn string) {
 	g := td.g
 	requests := td.requestChannel
-	err := c.Create(context.TODO(), instance)
+	err := c.Create(context.Background(), instance)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Eventually(requests).Should(gomega.Receive(gomega.Equal(reconcile.Request{NamespacedName: td.depKey})))
 	g.Eventually(database.Get(fqn)).Should(gomega.Equal(&instance.Spec))
@@ -138,7 +138,7 @@ func get(key client.ObjectKey, g *gomega.GomegaWithT) *shipsv1beta1.Sloop {
 
 func doGet(key client.ObjectKey) instanceWithError {
 	obj := &shipsv1beta1.Sloop{}
-	err := c.Get(context.TODO(), key, obj)
+	err := c.Get(context.Background(), key, obj)
 	return instanceWithError{
 		obj: obj,
 		err: err,
@@ -158,7 +158,7 @@ func (td *testDriver) doUpdate(newRig string) shouldRetry {
 	expectedRequest := reconcile.Request{NamespacedName: key}
 	obj := get(key, g)
 	obj.Spec.Rig = newRig
-	err := c.Update(context.TODO(), obj)
+	err := c.Update(context.Background(), obj)
 	if err != nil {
 		println(err)
 		if errors.IsConflict(err) {
@@ -176,7 +176,7 @@ func (td *testDriver) remove(fqn string, instance *shipsv1beta1.Sloop) {
 	requests := td.requestChannel
 	depKey := td.depKey
 	expectedRequest := reconcile.Request{NamespacedName: depKey}
-	err := c.Delete(context.TODO(), instance, client.GracePeriodSeconds(0))
+	err := c.Delete(context.Background(), instance, client.GracePeriodSeconds(0))
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Eventually(requests).Should(gomega.Receive(gomega.Equal(expectedRequest)))
 

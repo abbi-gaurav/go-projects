@@ -89,7 +89,7 @@ type ReconcileSloop struct {
 func (r *ReconcileSloop) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	// Fetch the Sloop instance
 	instance := &shipsv1beta1.Sloop{}
-	err := r.Get(context.TODO(), request.NamespacedName, instance)
+	err := r.Get(context.Background(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Object not found, return.  Created objects are automatically garbage collected.
@@ -145,7 +145,7 @@ func (r *ReconcileSloop) addExternal(instance *shipsv1beta1.Sloop, fqn string) e
 		Configured: true,
 		Update:     false,
 	}
-	err := r.Status().Update(context.TODO(), instance)
+	err := r.Status().Update(context.Background(), instance)
 	return err
 }
 
@@ -168,7 +168,7 @@ func (r *ReconcileSloop) updateExternal(instance *shipsv1beta1.Sloop, found *shi
 			Configured: true,
 			Update:     true,
 		}
-		err := r.Status().Update(context.TODO(), instance)
+		err := r.Status().Update(context.Background(), instance)
 		return err
 	}
 
