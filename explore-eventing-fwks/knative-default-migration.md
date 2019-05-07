@@ -2,7 +2,7 @@
 
 This guide references the steps to demonstrate the changing the default channel configuration. It starts with a state where no-default is specified (This is similar to how Kyma is currently deployed).
 
-**Prereuisites**
+**Prerequisites**
 
 - Knative serving is installed
 
