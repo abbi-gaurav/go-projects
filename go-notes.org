@@ -141,4 +141,10 @@ w = avg time a unit spends in system
 - A goroutine’s parent may want to cancel it.
 - A goroutine may want to cancel its children.
 - Any blocking operations within a goroutine need to be preemptable so that it may be canceled.
+** at-scale
+- *heartbeats*
+  - signal life to an observer
+  - 2 types
+    1. occur at regular interval
+    2. occur at the beginning of a unit of work
 
