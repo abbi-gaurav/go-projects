@@ -40,3 +40,4 @@ fabric.properties
 
 /vendor/
 /bin
+/keys/
