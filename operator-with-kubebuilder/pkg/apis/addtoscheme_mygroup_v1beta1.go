@@ -16,7 +16,7 @@ limitations under the License.
 package apis
 
 import (
-	"github.com/abbi-gaurav/go-learning-projects/operator-with-kubebuilder/pkg/apis/mygroup/v1beta1"
+	"github.com/abbi-gaurav/go-projects/operator-with-kubebuilder/pkg/apis/mygroup/v1beta1"
 )
 
 func init() {

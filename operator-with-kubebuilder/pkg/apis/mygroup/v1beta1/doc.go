@@ -16,7 +16,7 @@ limitations under the License.
 // Package v1beta1 contains API Schema definitions for the mygroup v1beta1 API group
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen=package,register
-// +k8s:conversion-gen=github.com/abbi-gaurav/go-learning-projects/operator-with-kubebuilder/pkg/apis/mygroup
+// +k8s:conversion-gen=github.com/abbi-gaurav/go-projects/operator-with-kubebuilder/pkg/apis/mygroup
 // +k8s:defaulter-gen=TypeMeta
 // +groupName=mygroup.gabbi.io
 package v1beta1

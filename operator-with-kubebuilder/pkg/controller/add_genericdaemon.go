@@ -16,7 +16,7 @@ limitations under the License.
 package controller
 
 import (
-	"github.com/abbi-gaurav/go-learning-projects/operator-with-kubebuilder/pkg/controller/genericdaemon"
+	"github.com/abbi-gaurav/go-projects/operator-with-kubebuilder/pkg/controller/genericdaemon"
 )
 
 func init() {

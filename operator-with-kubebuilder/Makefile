@@ -10,7 +10,7 @@ test: generate fmt vet manifests
 
 # Build manager binary
 manager: generate fmt vet
-	go build -o bin/manager github.com/abbi-gaurav/go-learning-projects/operator-with-kubebuilder/cmd/manager
+	go build -o bin/manager github.com/abbi-gaurav/go-projects/operator-with-kubebuilder/cmd/manager
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet
