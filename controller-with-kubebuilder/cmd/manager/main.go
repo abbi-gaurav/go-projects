@@ -20,9 +20,9 @@ import (
 	"flag"
 	"os"
 
-	"github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/apis"
-	"github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/controller"
-	"github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/webhook"
+	"github.com/abbi-gaurav/go-projects/controller-with-kubebuilder/pkg/apis"
+	"github.com/abbi-gaurav/go-projects/controller-with-kubebuilder/pkg/controller"
+	"github.com/abbi-gaurav/go-projects/controller-with-kubebuilder/pkg/webhook"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"

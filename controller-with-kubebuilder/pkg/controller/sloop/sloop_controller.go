@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/db"
-	shipsv1beta1 "github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/apis/ships/v1beta1"
+	"github.com/abbi-gaurav/go-projects/controller-with-kubebuilder/db"
+	shipsv1beta1 "github.com/abbi-gaurav/go-projects/controller-with-kubebuilder/pkg/apis/ships/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/cache"

@@ -18,7 +18,7 @@ package sloop
 
 import (
 	"fmt"
-	shipsv1beta1 "github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/apis/ships/v1beta1"
+	shipsv1beta1 "github.com/abbi-gaurav/go-projects/controller-with-kubebuilder/pkg/apis/ships/v1beta1"
 	"github.com/onsi/gomega"
 	"golang.org/x/net/context"
 	"k8s.io/apimachinery/pkg/api/errors"

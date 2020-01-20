@@ -17,7 +17,7 @@ limitations under the License.
 package controller
 
 import (
-	"github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/controller/sloop"
+	"github.com/abbi-gaurav/go-projects/controller-with-kubebuilder/pkg/controller/sloop"
 )
 
 func init() {

@@ -17,7 +17,7 @@ limitations under the License.
 package apis
 
 import (
-	"github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/apis/ships/v1beta1"
+	"github.com/abbi-gaurav/go-projects/controller-with-kubebuilder/pkg/apis/ships/v1beta1"
 )
 
 func init() {

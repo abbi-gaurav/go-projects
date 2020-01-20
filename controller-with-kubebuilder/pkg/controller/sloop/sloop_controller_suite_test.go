@@ -17,7 +17,7 @@ limitations under the License.
 package sloop
 
 import (
-	"github.com/abbi-gaurav/go-learning-projects/controller-with-kubebuilder/pkg/apis"
+	"github.com/abbi-gaurav/go-projects/controller-with-kubebuilder/pkg/apis"
 	"github.com/onsi/gomega"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
