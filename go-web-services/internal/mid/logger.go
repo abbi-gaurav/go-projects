@@ -2,7 +2,7 @@ package mid
 
 import (
 	"context"
-	"github.com/abbi-gaurav/go-learning-projects/go-web-services/internal/platform/web"
+	"github.com/abbi-gaurav/go-projects/go-web-services/internal/platform/web"
 	"log"
 	"net/http"
 	"time"

@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"github.com/abbi-gaurav/go-learning-projects/go-web-services/internal/mid"
-	"github.com/abbi-gaurav/go-learning-projects/go-web-services/internal/platform/db"
-	"github.com/abbi-gaurav/go-learning-projects/go-web-services/internal/platform/web"
+	"github.com/abbi-gaurav/go-projects/go-web-services/internal/mid"
+	"github.com/abbi-gaurav/go-projects/go-web-services/internal/platform/db"
+	"github.com/abbi-gaurav/go-projects/go-web-services/internal/platform/web"
 	"net/http"
 )
 

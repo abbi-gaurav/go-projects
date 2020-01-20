@@ -3,7 +3,7 @@ package mid
 import (
 	"context"
 	"errors"
-	"github.com/abbi-gaurav/go-learning-projects/go-web-services/internal/platform/web"
+	"github.com/abbi-gaurav/go-projects/go-web-services/internal/platform/web"
 	errors2 "github.com/pkg/errors"
 	"log"
 	"net/http"

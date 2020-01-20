@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/abbi-gaurav/go-learning-projects/go-web-services/cmd/crud/handlers"
-	"github.com/abbi-gaurav/go-learning-projects/go-web-services/internal/platform/db"
+	"github.com/abbi-gaurav/go-projects/go-web-services/cmd/crud/handlers"
+	"github.com/abbi-gaurav/go-projects/go-web-services/internal/platform/db"
 	"log"
 	"net/http"
 	"os"

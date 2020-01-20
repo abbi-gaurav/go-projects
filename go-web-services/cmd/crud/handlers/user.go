@@ -3,8 +3,8 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"github.com/abbi-gaurav/go-learning-projects/go-web-services/internal/platform/db"
-	"github.com/abbi-gaurav/go-learning-projects/go-web-services/internal/platform/web"
+	"github.com/abbi-gaurav/go-projects/go-web-services/internal/platform/db"
+	"github.com/abbi-gaurav/go-projects/go-web-services/internal/platform/web"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
 	"net/http"
