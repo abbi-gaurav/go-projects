@@ -2,7 +2,7 @@ package router
 
 import "github.com/gorilla/mux"
 import (
-	"github.com/abbi-gaurav/go-learning-projects/k8s-ready-service/handlers"
+	"github.com/abbi-gaurav/go-projects/k8s-ready-service/handlers"
 	"log"
 	"sync/atomic"
 	"time"

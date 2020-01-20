@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/abbi-gaurav/go-learning-projects/k8s-ready-service/router"
-	"github.com/abbi-gaurav/go-learning-projects/k8s-ready-service/version"
+	"github.com/abbi-gaurav/go-projects/k8s-ready-service/router"
+	"github.com/abbi-gaurav/go-projects/k8s-ready-service/version"
 	"log"
 	"net/http"
 	"os"

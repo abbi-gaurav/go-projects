@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"testing"
-	"net/http/httptest"
-	"net/http"
-	"io/ioutil"
 	"encoding/json"
-	"github.com/go-learning-projects/k8s-ready-service/model"
+	"github.com/abbi-gaurav/go-projects/k8s-ready-service/model"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 	"time"
 )
 

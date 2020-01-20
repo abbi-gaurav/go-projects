@@ -1,12 +1,12 @@
 package router
 
 import (
-	"testing"
-	"net/http/httptest"
+	"github.com/abbi-gaurav/go-projects/k8s-ready-service/model"
 	"net/http"
+	"net/http/httptest"
 	"os"
+	"testing"
 	"time"
-	"github.com/go-learning-projects/k8s-ready-service/model"
 )
 
 var ts *httptest.Server

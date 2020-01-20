@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/abbi-gaurav/go-learning-projects/k8s-ready-service/model"
+	"github.com/abbi-gaurav/go-projects/k8s-ready-service/model"
 	"log"
 	"net/http"
 )
