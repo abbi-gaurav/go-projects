@@ -6,9 +6,9 @@ My awesome controller
 package fake
 
 import (
-	clientset "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned"
-	awesomev1 "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned/typed/awesome.controller.io/v1"
-	fakeawesomev1 "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned/typed/awesome.controller.io/v1/fake"
+	clientset "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/clientset/versioned"
+	awesomev1 "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/clientset/versioned/typed/awesome.controller.io/v1"
+	fakeawesomev1 "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/clientset/versioned/typed/awesome.controller.io/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

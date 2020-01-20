@@ -5,7 +5,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	awesomecontroller "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/apis/awesome.controller.io"
+	awesomecontroller "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/apis/awesome.controller.io"
 )
 
 // SchemeGroupVersion is group version used to register these objects

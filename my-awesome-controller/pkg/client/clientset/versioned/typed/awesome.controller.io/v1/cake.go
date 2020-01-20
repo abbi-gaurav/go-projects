@@ -6,8 +6,8 @@ My awesome controller
 package v1
 
 import (
-	v1 "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
-	scheme "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned/scheme"
+	v1 "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
+	scheme "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"

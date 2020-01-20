@@ -6,8 +6,8 @@ My awesome controller
 package v1
 
 import (
-	v1 "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
-	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned/scheme"
+	v1 "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
+	"github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/clientset/versioned/scheme"
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	rest "k8s.io/client-go/rest"
 )

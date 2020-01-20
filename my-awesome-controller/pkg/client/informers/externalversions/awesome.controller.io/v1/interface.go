@@ -6,7 +6,7 @@ My awesome controller
 package v1
 
 import (
-	internalinterfaces "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/informers/externalversions/internalinterfaces"
+	internalinterfaces "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to all the informers in this group version.

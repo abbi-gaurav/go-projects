@@ -6,7 +6,7 @@ My awesome controller
 package versioned
 
 import (
-	awesomev1 "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned/typed/awesome.controller.io/v1"
+	awesomev1 "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/clientset/versioned/typed/awesome.controller.io/v1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

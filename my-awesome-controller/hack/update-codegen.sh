@@ -11,7 +11,7 @@ echo "$SCRIPT_ROOT"
 echo "$CODEGEN_PKG"
 
 ${CODEGEN_PKG}/generate-groups.sh "all" \
-	      github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client \
-	      github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/apis \
+	      github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client \
+	      github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/apis \
 	      awesome.controller.io:v1 \
 	      --go-header-file ${SCRIPT_ROOT}/hack/boilerplate.go.txt

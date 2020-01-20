@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/app"
-	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/informer"
-	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/internal/opts"
+	"github.com/abbi-gaurav/go-projects/my-awesome-controller/app"
+	"github.com/abbi-gaurav/go-projects/my-awesome-controller/informer"
+	"github.com/abbi-gaurav/go-projects/my-awesome-controller/internal/opts"
 	"log"
 	"net/http"
 	"os"

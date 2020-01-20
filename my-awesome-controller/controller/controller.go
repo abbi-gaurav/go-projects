@@ -2,11 +2,11 @@ package controller
 
 import (
 	"fmt"
-	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/db"
-	types "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
-	clientSet "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned"
-	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/informers/externalversions/awesome.controller.io/v1"
-	listers "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/listers/awesome.controller.io/v1"
+	"github.com/abbi-gaurav/go-projects/my-awesome-controller/db"
+	types "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
+	clientSet "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/clientset/versioned"
+	"github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/informers/externalversions/awesome.controller.io/v1"
+	listers "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/listers/awesome.controller.io/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	utilRuntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"

@@ -1,12 +1,12 @@
 RELEASE?=0.0.1
 COMMIT?=$(shell git rev-parse --short HEAD)
 BUILD_TIME?=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
-PROJECT?=github.com/abbi-gaurav/go-learning-projects/my-awesome-controller
+PROJECT?=github.com/abbi-gaurav/go-projects/my-awesome-controller
 APP?=my-awesome-controller
 PORT?=8000
 GOOS?=linux
 GOARCH?=amd64
-CONTAINER_IMAGE?=gabbi/go-learning-projects/abbi-gaurav/${APP}
+CONTAINER_IMAGE?=gabbi/go-projects/abbi-gaurav/${APP}
 
 clean:
 	rm -rf ${APP}

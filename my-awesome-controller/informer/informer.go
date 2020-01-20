@@ -1,9 +1,9 @@
 package informer
 
 import (
-	clientset "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned"
-	informers "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/informers/externalversions"
-	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/informers/externalversions/awesome.controller.io/v1"
+	clientset "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/clientset/versioned"
+	informers "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/informers/externalversions"
+	"github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/informers/externalversions/awesome.controller.io/v1"
 	"k8s.io/client-go/rest"
 	"log"
 	"time"

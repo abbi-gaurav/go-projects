@@ -6,7 +6,7 @@ My awesome controller
 package fake
 
 import (
-	v1 "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned/typed/awesome.controller.io/v1"
+	v1 "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/clientset/versioned/typed/awesome.controller.io/v1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )

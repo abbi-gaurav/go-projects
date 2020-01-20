@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
+	"github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
 	"strings"
 )
 

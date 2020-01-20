@@ -8,10 +8,10 @@ package v1
 import (
 	time "time"
 
-	awesomecontrolleriov1 "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
-	versioned "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned"
-	internalinterfaces "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/informers/externalversions/internalinterfaces"
-	v1 "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/listers/awesome.controller.io/v1"
+	awesomecontrolleriov1 "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/apis/awesome.controller.io/v1"
+	versioned "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/clientset/versioned"
+	internalinterfaces "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/informers/externalversions/internalinterfaces"
+	v1 "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/listers/awesome.controller.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"

@@ -1,11 +1,11 @@
 package app
 
 import (
-	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/controller"
-	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/db"
-	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/internal/opts"
-	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned"
-	"github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/informers/externalversions/awesome.controller.io/v1"
+	"github.com/abbi-gaurav/go-projects/my-awesome-controller/controller"
+	"github.com/abbi-gaurav/go-projects/my-awesome-controller/db"
+	"github.com/abbi-gaurav/go-projects/my-awesome-controller/internal/opts"
+	"github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/clientset/versioned"
+	"github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/informers/externalversions/awesome.controller.io/v1"
 	"net/http"
 )
 

@@ -10,9 +10,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/clientset/versioned"
-	awesomecontrollerio "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/informers/externalversions/awesome.controller.io"
-	internalinterfaces "github.com/abbi-gaurav/go-learning-projects/my-awesome-controller/pkg/client/informers/externalversions/internalinterfaces"
+	versioned "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/clientset/versioned"
+	awesomecontrollerio "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/informers/externalversions/awesome.controller.io"
+	internalinterfaces "github.com/abbi-gaurav/go-projects/my-awesome-controller/pkg/client/informers/externalversions/internalinterfaces"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
