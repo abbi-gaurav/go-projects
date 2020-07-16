@@ -1,7 +1,7 @@
 package low_level
 
 import (
-	"github.com/abbi-gaurav/go-learning-projects/ultimate-go-programming/ccp-in-go/conc-at-scale/error-handling/model"
+	"github.com/abbi-gaurav/go-projects/ultimate-go-programming/ccp-in-go/conc-at-scale/error-handling/model"
 	"os"
 )
 

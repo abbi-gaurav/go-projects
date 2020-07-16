@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/go-learning-projects/ultimate-go-programming/testing/endpoint_test/handlers"
+	"github.com/abbi-gaurav/go-projects/ultimate-go-programming/testing/endpoint_test/handlers"
 	"net/http"
 )
 

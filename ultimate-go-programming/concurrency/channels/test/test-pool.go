@@ -5,7 +5,7 @@ import (
 	"io"
 	"sync/atomic"
 	"sync"
-	"github.com/go-learning-projects/ultimate-go-programming/concurrency/channels/pool"
+	"github.com/abbi-gaurav/go-projects/ultimate-go-programming/concurrency/channels/pool"
 	"time"
 	"math/rand"
 )

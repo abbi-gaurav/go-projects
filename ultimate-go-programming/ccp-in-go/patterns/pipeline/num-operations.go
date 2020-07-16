@@ -1,7 +1,7 @@
 package main
 
 import "fmt"
-import "github.com/abbi-gaurav/go-learning-projects/ultimate-go-programming/ccp-in-go/patterns/utils"
+import "github.com/abbi-gaurav/go-projects/ultimate-go-programming/ccp-in-go/patterns/utils"
 
 func multiply(done <-chan interface{}, intStream <-chan int, multiplier int) <-chan int {
 	processedStream := make(chan int)

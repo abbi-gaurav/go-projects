@@ -4,7 +4,7 @@ import (
 	"testing"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/assert"
-	"github.com/go-learning-projects/ultimate-go-programming/use-testify/calculator"
+	"github.com/abbi-gaurav/go-projects/ultimate-go-programming/use-testify/calculator"
 )
 
 type randomMock struct {

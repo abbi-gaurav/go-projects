@@ -1,6 +1,6 @@
 package main
 
-import "github.com/go-learning-projects/ultimate-go-programming/concurrency/actors"
+import "github.com/abbi-gaurav/go-projects/ultimate-go-programming/concurrency/actors"
 import "time"
 
 var actor *actors.MyActor

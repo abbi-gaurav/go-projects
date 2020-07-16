@@ -4,9 +4,9 @@ import (
 	"os"
 	"fmt"
 	"sort"
-	"github.com/go-learning-projects/ultimate-go-programming/concurrency/channels/pipeline/md5/parallel"
-	"github.com/go-learning-projects/ultimate-go-programming/concurrency/channels/pipeline/md5/serial"
-	"github.com/go-learning-projects/ultimate-go-programming/concurrency/channels/pipeline/md5/bounded"
+	"github.com/abbi-gaurav/go-projects/ultimate-go-programming/concurrency/channels/pipeline/md5/parallel"
+	"github.com/abbi-gaurav/go-projects/ultimate-go-programming/concurrency/channels/pipeline/md5/serial"
+	"github.com/abbi-gaurav/go-projects/ultimate-go-programming/concurrency/channels/pipeline/md5/bounded"
 )
 
 func main() {

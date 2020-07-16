@@ -1,6 +1,6 @@
 package main
 
-import "github.com/go-learning-projects/ultimate-go-programming/concurrency/channels/pipeline/string-processing"
+import "github.com/abbi-gaurav/go-projects/ultimate-go-programming/concurrency/channels/pipeline/string-processing"
 
 func main() {
 	var strings []string

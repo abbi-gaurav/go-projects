@@ -2,7 +2,7 @@ package queuing
 
 import (
 	"bufio"
-	"github.com/abbi-gaurav/go-learning-projects/ultimate-go-programming/ccp-in-go/patterns/utils"
+	"github.com/abbi-gaurav/go-projects/ultimate-go-programming/ccp-in-go/patterns/utils"
 	"io"
 	"io/ioutil"
 	"log"

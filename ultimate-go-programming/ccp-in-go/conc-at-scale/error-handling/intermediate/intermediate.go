@@ -1,8 +1,8 @@
 package intermediate
 
 import (
-	lowLevel "github.com/abbi-gaurav/go-learning-projects/ultimate-go-programming/ccp-in-go/conc-at-scale/error-handling/low-level"
-	"github.com/abbi-gaurav/go-learning-projects/ultimate-go-programming/ccp-in-go/conc-at-scale/error-handling/model"
+	lowLevel "github.com/abbi-gaurav/go-projects/ultimate-go-programming/ccp-in-go/conc-at-scale/error-handling/low-level"
+	"github.com/abbi-gaurav/go-projects/ultimate-go-programming/ccp-in-go/conc-at-scale/error-handling/model"
 	"os/exec"
 )
 

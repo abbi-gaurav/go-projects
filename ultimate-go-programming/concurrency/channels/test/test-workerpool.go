@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 	"time"
-	"github.com/go-learning-projects/ultimate-go-programming/concurrency/channels/workerpool"
+	"github.com/abbi-gaurav/go-projects/ultimate-go-programming/concurrency/channels/workerpool"
 	"sync"
 )
 

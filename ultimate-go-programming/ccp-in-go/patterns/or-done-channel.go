@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/abbi-gaurav/go-learning-projects/ultimate-go-programming/ccp-in-go/patterns/utils"
+	"github.com/abbi-gaurav/go-projects/ultimate-go-programming/ccp-in-go/patterns/utils"
 )
 
 func main() {

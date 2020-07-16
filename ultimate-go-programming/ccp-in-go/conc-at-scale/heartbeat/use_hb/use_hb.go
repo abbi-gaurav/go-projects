@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	heartbeat2 "github.com/abbi-gaurav/go-learning-projects/ultimate-go-programming/ccp-in-go/conc-at-scale/heartbeat"
+	heartbeat2 "github.com/abbi-gaurav/go-projects/ultimate-go-programming/ccp-in-go/conc-at-scale/heartbeat"
 	"time"
 )
 

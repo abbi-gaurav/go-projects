@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/go-learning-projects/ultimate-go-programming/concurrency/channels/pipeline"
+	"github.com/abbi-gaurav/go-projects/ultimate-go-programming/concurrency/channels/pipeline"
 )
 
 func main() {

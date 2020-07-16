@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 	"log"
-	"github.com/go-learning-projects/ultimate-go-programming/concurrency/channels/runner"
+	"github.com/abbi-gaurav/go-projects/ultimate-go-programming/concurrency/channels/runner"
 	"os"
 )
 
