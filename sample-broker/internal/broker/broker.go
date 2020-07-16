@@ -3,22 +3,42 @@ package broker
 import (
 	"code.cloudfoundry.org/lager"
 	"context"
+	"github.com/abbi-gaurav/go-projects/sample-broker/internal/model"
 	"github.com/pivotal-cf/brokerapi/domain"
 )
 
 type K8SServiceBroker struct {
-	logger lager.Logger
+	logger        lager.Logger
+	availableSvcs []domain.Service
 }
 
-func NewBroker(logger lager.Logger) *K8SServiceBroker {
+func to(services model.Services) []domain.Service {
+	brokerSvcs := make([]domain.Service, len(services.Catalog))
+	for i, svc := range services.Catalog {
+		brokerSvcs[i] = domain.Service{
+			ID:                   svc.ServiceId,
+			Name:                 svc.Name,
+			Description:          svc.Description,
+			Bindable:             false,
+			InstancesRetrievable: false,
+			BindingsRetrievable:  false,
+			PlanUpdatable:        false,
+			Plans:                []domain.ServicePlan{{ID: svc.PlanId, Name: "default", Description: "Default Plan"}},
+		}
+	}
+	return brokerSvcs
+}
+
+func NewBroker(logger lager.Logger, services model.Services) *K8SServiceBroker {
 	return &K8SServiceBroker{
-		logger: logger,
+		logger:        logger,
+		availableSvcs: to(services),
 	}
 }
 
 func (k *K8SServiceBroker) Services(ctx context.Context) ([]domain.Service, error) {
 	k.logger.Info("list-services")
-	return nil, nil
+	return k.availableSvcs, nil
 }
 
 func (k *K8SServiceBroker) Provision(ctx context.Context, instanceID string, details domain.ProvisionDetails, asyncAllowed bool) (domain.ProvisionedServiceSpec, error) {
