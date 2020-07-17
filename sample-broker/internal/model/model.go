@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 )
@@ -29,4 +30,16 @@ func Parse(filePath string) (Services, error) {
 		return Services{}, err
 	}
 	return services, nil
+}
+
+type ServiceParams struct {
+	Namespace string `json:"namespace,omitempty"`
+}
+
+func Marshal(rawJson []byte) (*ServiceParams, error) {
+	var params ServiceParams
+	if err := json.Unmarshal(rawJson, &params); err != nil {
+		return nil, err
+	}
+	return &params, nil
 }

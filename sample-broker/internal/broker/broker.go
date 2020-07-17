@@ -3,19 +3,35 @@ package broker
 import (
 	"code.cloudfoundry.org/lager"
 	"context"
+	"github.com/abbi-gaurav/go-projects/sample-broker/internal/middleware"
 	"github.com/abbi-gaurav/go-projects/sample-broker/internal/model"
+	"github.com/pivotal-cf/brokerapi"
 	"github.com/pivotal-cf/brokerapi/domain"
 )
 
 type K8SServiceBroker struct {
 	logger        lager.Logger
 	availableSvcs []domain.Service
+	servicesMap   map[string]domain.Service
+	service       *middleware.Service
 }
 
-func to(services model.Services) []domain.Service {
+func NewBroker(logger lager.Logger, services model.Services, service *middleware.Service) *K8SServiceBroker {
+	availableSvccList, servicesMap := to(services)
+	return &K8SServiceBroker{
+		logger:        logger,
+		availableSvcs: availableSvccList,
+		servicesMap:   servicesMap,
+		service:       service,
+	}
+}
+
+func to(services model.Services) ([]domain.Service, map[string]domain.Service) {
 	brokerSvcs := make([]domain.Service, len(services.Catalog))
+	serviceMap := make(map[string]domain.Service, len(services.Catalog))
+
 	for i, svc := range services.Catalog {
-		brokerSvcs[i] = domain.Service{
+		domainSvc := domain.Service{
 			ID:                   svc.ServiceId,
 			Name:                 svc.Name,
 			Description:          svc.Description,
@@ -24,16 +40,12 @@ func to(services model.Services) []domain.Service {
 			BindingsRetrievable:  false,
 			PlanUpdatable:        false,
 			Plans:                []domain.ServicePlan{{ID: svc.PlanId, Name: "default", Description: "Default Plan"}},
+			Metadata:             &domain.ServiceMetadata{ImageUrl: svc.Image},
 		}
+		brokerSvcs[i] = domainSvc
+		serviceMap[svc.ServiceId] = domainSvc
 	}
-	return brokerSvcs
-}
-
-func NewBroker(logger lager.Logger, services model.Services) *K8SServiceBroker {
-	return &K8SServiceBroker{
-		logger:        logger,
-		availableSvcs: to(services),
-	}
+	return brokerSvcs, serviceMap
 }
 
 func (k *K8SServiceBroker) Services(ctx context.Context) ([]domain.Service, error) {
@@ -43,7 +55,23 @@ func (k *K8SServiceBroker) Services(ctx context.Context) ([]domain.Service, erro
 
 func (k *K8SServiceBroker) Provision(ctx context.Context, instanceID string, details domain.ProvisionDetails, asyncAllowed bool) (domain.ProvisionedServiceSpec, error) {
 	k.logger.Info("provision", lager.Data{"instanceId": instanceID, "details": details, "asyncAllowed": asyncAllowed})
-	return domain.ProvisionedServiceSpec{}, nil
+	params, err := model.Marshal(details.RawParameters)
+	if err != nil {
+		return domain.ProvisionedServiceSpec{}, err
+	}
+	service := brokerapi.RetrieveServiceFromContext(ctx)
+
+	err = k.service.ProvisionService(service, params)
+	if err != nil {
+		return domain.ProvisionedServiceSpec{}, err
+	}
+
+	return domain.ProvisionedServiceSpec{
+		IsAsync:       false,
+		AlreadyExists: false,
+		DashboardURL:  "created",
+		OperationData: "something",
+	}, nil
 }
 
 func (k *K8SServiceBroker) Deprovision(ctx context.Context, instanceID string, details domain.DeprovisionDetails, asyncAllowed bool) (domain.DeprovisionServiceSpec, error) {

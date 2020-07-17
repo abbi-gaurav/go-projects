@@ -4,6 +4,7 @@ import (
 	"code.cloudfoundry.org/lager"
 	"context"
 	"github.com/abbi-gaurav/go-projects/sample-broker/internal/broker"
+	"github.com/abbi-gaurav/go-projects/sample-broker/internal/middleware"
 	"github.com/abbi-gaurav/go-projects/sample-broker/internal/model"
 	"github.com/pivotal-cf/brokerapi"
 	"log"
@@ -18,19 +19,29 @@ func main() {
 	brokerLogger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
 	brokerLogger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
 
-	availableServices, err := model.Parse("/Users/d066419/go/src/github.com/abbi-gaurav/go-projects/sample-broker/examples/catalog.yaml")
+	availableServiceTemplates, err := model.Parse("/Users/d066419/go/src/github.com/abbi-gaurav/go-projects/sample-broker/examples/catalog.yaml")
 	if err != nil {
 		brokerLogger.Fatal("parse", err)
 	}
-	brokerLogger.Info("parsed", lager.Data{"availableServices": availableServices})
+	brokerLogger.Info("parsed", lager.Data{"availableServiceTemplates": availableServiceTemplates})
 
-	serviceBroker := broker.NewBroker(brokerLogger, availableServices)
+	service, err := middleware.New(brokerLogger)
+	if err != nil {
+		brokerLogger.Fatal("creating-middleware", err)
+	}
+
+	serviceBroker := broker.NewBroker(brokerLogger, availableServiceTemplates, service)
 
 	brokerAPI := brokerapi.New(serviceBroker, brokerLogger, brokerapi.BrokerCredentials{
 		Username: "admin",
 		Password: "nimda123",
 	})
 
+	runServer(brokerAPI, brokerLogger)
+
+}
+
+func runServer(brokerAPI http.Handler, brokerLogger lager.Logger) {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 	srv := &http.Server{
@@ -54,5 +65,4 @@ func main() {
 	_ = srv.Shutdown(context.Background())
 
 	brokerLogger.Info("Done")
-
 }
