@@ -38,7 +38,11 @@ curl --location --request PUT "https://sample-broker.${CLUSTER_DOMAIN}/v2/servic
       "plan_id": "default",
       "context": {},
       "parameters": {
-          "namespace": "test-osb"
+          "serviceInstanceName": "my-order-api",
+          "auth" : {
+              "baUser" : "user1",
+              "baPassword" : "secret"
+          }
       }
   }'
 ```
