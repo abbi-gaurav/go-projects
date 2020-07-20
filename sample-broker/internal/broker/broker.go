@@ -3,8 +3,6 @@ package broker
 import (
 	"code.cloudfoundry.org/lager"
 	"context"
-	"github.com/abbi-gaurav/go-projects/sample-broker/internal/config"
-	"github.com/abbi-gaurav/go-projects/sample-broker/internal/constants"
 	"github.com/abbi-gaurav/go-projects/sample-broker/internal/middleware"
 	"github.com/abbi-gaurav/go-projects/sample-broker/internal/model"
 	"github.com/pivotal-cf/brokerapi"
@@ -39,13 +37,6 @@ func to(services model.Services) []domain.Service {
 			BindingsRetrievable:  false,
 			PlanUpdatable:        false,
 			Plans:                []domain.ServicePlan{{ID: svc.PlanId, Name: "default", Description: "Default Plan"}},
-			Metadata: &domain.ServiceMetadata{
-				ImageUrl: svc.Image,
-				AdditionalMetadata: map[string]interface{}{
-					constants.ExposedPortMetadataField: svc.ExposedPort,
-					constants.Namespace:                config.AppConfig().Namespace,
-				},
-			},
 		}
 		brokerSvcs[i] = domainSvc
 	}
@@ -59,13 +50,14 @@ func (k *K8SServiceBroker) Services(ctx context.Context) ([]domain.Service, erro
 
 func (k *K8SServiceBroker) Provision(ctx context.Context, instanceID string, details domain.ProvisionDetails, asyncAllowed bool) (domain.ProvisionedServiceSpec, error) {
 	k.logger.Info("provision", lager.Data{"instanceId": instanceID, "details": details, "asyncAllowed": asyncAllowed})
+
 	params, err := model.Marshal(details.RawParameters)
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
 	service := brokerapi.RetrieveServiceFromContext(ctx)
 
-	provisionedSpec, err := k.service.ProvisionService(service, params)
+	provisionedSpec, err := k.service.ProvisionService(service, params, instanceID)
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}

@@ -1,7 +1,5 @@
 catalog:
-  - name: orders-api
-    image: gabbi/my-go-extension:0.0.1
-    exposedPort: 8080
-    description: "My awesome Orders API"
+  - name: demo-orders-api
+    description: "A demo Orders API running on SAP Cloud Platform Extension Factory, Kyma Runtime"
     serviceId: 123-123-123-123
     planId: default

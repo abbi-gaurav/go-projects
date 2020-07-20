@@ -34,7 +34,7 @@ init:
 
 set-rbac:
 	kubectl -n ${NS} create serviceaccount sample-broker
-	kubectl -n ${NS} create role sample-broker --verb=get,list,watch,create,delete,update --resource=deployments,services,apirules
+	kubectl -n ${NS} create role sample-broker --verb=get,list,watch,create,delete,update --resource=deployments,services,apirules,apirules/status
 	kubectl -n ${NS} create rolebinding sample-broker --role=sample-broker --serviceaccount=${NS}:sample-broker
 
 create-secret:
@@ -47,9 +47,6 @@ set-catalog:
 
 pre-deploy: set-rbac create-secret set-catalog
 
-deploy:
-	kubectl -n ${NS} apply -f k8s/deployment.yaml
-
 delete-broker:
 	kubectl -n ${NS} delete -f k8s/deployment.yaml
 	kubectl -n ${NS} delete configmap broker-catalog
@@ -58,7 +55,8 @@ delete-broker:
 	kubectl -n ${NS} delete role sample-broker
 	kubectl -n ${NS} delete serviceaccount sample-broker
 
-deploy-broker: pre-deploy deploy
+deploy-broker: pre-deploy
+	kubectl -n ${NS} apply -f k8s/deployment.yaml
 
 run-locally:
 	docker run -p 8080:8080 \
@@ -68,5 +66,7 @@ run-locally:
 		-e KUBECONFIG=/etc/kubernetes/marco-demo-canary.yaml \
 		gabbi/sample-broker:0.0.1
 
+setup-example:
+	kubectl -n ${NS} apply -f examples/application-on-kyma.yaml
 clean-up-example:
 	kubectl -n ${NS} delete deployment,svc,apirule -l=created-by=sample-broker

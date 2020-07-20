@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: demo-orders-api
+  name: demo-orders-api
+  namespace: test-osb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-orders-api
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: demo-orders-api
+    spec:
+      containers:
+      - image: gabbi/my-go-extension:0.0.1
+        name: my-go-extension
+        resources: {}
+        ports:
+          - containerPort: 8080
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: demo-orders-api
+  name: demo-orders-api
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: demo-orders-api
+status:
+  loadBalancer: {}
