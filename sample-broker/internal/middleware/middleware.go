@@ -3,6 +3,7 @@ package middleware
 import (
 	"code.cloudfoundry.org/lager"
 	"context"
+	"github.com/abbi-gaurav/go-projects/sample-broker/internal/constants"
 	"github.com/abbi-gaurav/go-projects/sample-broker/internal/model"
 	apiRules "github.com/kyma-incubator/api-gateway/api/v1alpha1"
 	rulev1alpha1 "github.com/ory/oathkeeper-maester/api/v1alpha1"
@@ -15,6 +16,7 @@ import (
 	"k8s.io/client-go/deprecated/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	"strconv"
 )
 
 type Service struct {
@@ -56,14 +58,33 @@ func createScheme() (*runtime.Scheme, error) {
 	return sch, nil
 }
 
+func getContainerPort(additionalMetadata map[string]interface{}) (int32, error) {
+	i, exists := additionalMetadata[constants.ExposedPortMetadataField]
+
+	if exists {
+		containerPort, err := strconv.Atoi(i.(string))
+		if err != nil {
+			return -1, err
+		}
+		return int32(containerPort), nil
+	} else {
+		return int32(constants.DefaultServicePort), nil
+	}
+}
+
 func (k *Service) ProvisionService(service *domain.Service, params *model.ServiceParams) error {
 	labels := map[string]string{"app": service.Name, "created-by": "sample-broker"}
+	containerPort, err := getContainerPort(service.Metadata.AdditionalMetadata)
 
-	if err := k.provisionDeployment(service, params, labels); err != nil {
+	if err != nil {
 		return err
 	}
 
-	if err := k.provisionK8sService(service, params, labels); err != nil {
+	if err := k.provisionDeployment(service, params, labels, containerPort); err != nil {
+		return err
+	}
+
+	if err := k.provisionK8sService(service, params, labels, containerPort); err != nil {
 		return err
 	}
 
@@ -74,13 +95,13 @@ func (k *Service) ProvisionService(service *domain.Service, params *model.Servic
 	return nil
 }
 
-func (k *Service) provisionDeployment(service *domain.Service, params *model.ServiceParams, labels map[string]string) error {
-	deployment := k.createK8sDeploymentObject(service, params, labels)
+func (k *Service) provisionDeployment(service *domain.Service, params *model.ServiceParams, labels map[string]string, containerPort int32) error {
+	deployment := k.createK8sDeploymentObject(service, params, labels, containerPort)
 	return k.k8sClient.Create(context.TODO(), deployment)
 }
 
-func (k *Service) provisionK8sService(service *domain.Service, params *model.ServiceParams, labels map[string]string) error {
-	k8sService := k.createK8SServiceObject(service, params, labels)
+func (k *Service) provisionK8sService(service *domain.Service, params *model.ServiceParams, labels map[string]string, containerPort int32) error {
+	k8sService := k.createK8SServiceObject(service, params, labels, containerPort)
 	return k.k8sClient.Create(context.TODO(), k8sService)
 }
 
@@ -89,7 +110,7 @@ func (k *Service) provisionAPIRule(service *domain.Service, params *model.Servic
 	return k.k8sClient.Create(context.TODO(), kymaApiRule)
 }
 
-func (k *Service) createK8sDeploymentObject(service *domain.Service, params *model.ServiceParams, labels map[string]string) *appsv1.Deployment {
+func (k *Service) createK8sDeploymentObject(service *domain.Service, params *model.ServiceParams, labels map[string]string, containerPort int32) *appsv1.Deployment {
 	replicas := int32(1)
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -111,7 +132,7 @@ func (k *Service) createK8sDeploymentObject(service *domain.Service, params *mod
 						Image: service.Metadata.ImageUrl,
 						Name:  service.Name,
 						Ports: []corev1.ContainerPort{{
-							ContainerPort: 8080,
+							ContainerPort: containerPort,
 						}},
 					}},
 				},
@@ -122,7 +143,7 @@ func (k *Service) createK8sDeploymentObject(service *domain.Service, params *mod
 	return deployment
 }
 
-func (k *Service) createK8SServiceObject(service *domain.Service, params *model.ServiceParams, labels map[string]string) *corev1.Service {
+func (k *Service) createK8SServiceObject(service *domain.Service, params *model.ServiceParams, labels map[string]string, containerPort int32) *corev1.Service {
 	k8sSvc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      service.Name,
@@ -132,9 +153,9 @@ func (k *Service) createK8SServiceObject(service *domain.Service, params *model.
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{{
 				TargetPort: intstr.IntOrString{
-					IntVal: 8080,
+					IntVal: containerPort,
 				},
-				Port: 8080,
+				Port: constants.DefaultServicePort,
 			}},
 			Selector: labels,
 		},
@@ -143,9 +164,9 @@ func (k *Service) createK8SServiceObject(service *domain.Service, params *model.
 }
 
 func (k *Service) createAPIRuleObject(service *domain.Service, params *model.ServiceParams, labels map[string]string) *apiRules.APIRule {
-	fqdn := service.Name + params.Namespace
-	port := uint32(8080)
-	gateway := "kyma-gateway.kyma-system.svc.cluster.local"
+	fqdn := service.Name + "-" + params.Namespace
+	port := uint32(constants.DefaultServicePort)
+	gateway := constants.KymaGatewayDomain
 	apiRule := apiRules.APIRule{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: params.Namespace,
@@ -156,7 +177,7 @@ func (k *Service) createAPIRuleObject(service *domain.Service, params *model.Ser
 			Rules: []apiRules.Rule{
 				{
 					Methods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
-					Path: "/.*",
+					Path:    "/.*",
 					AccessStrategies: []*rulev1alpha1.Authenticator{
 						{
 							Handler: &rulev1alpha1.Handler{

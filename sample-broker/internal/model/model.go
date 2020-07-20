@@ -9,7 +9,7 @@ import (
 type ServiceConfiguration struct {
 	Name        string `yaml:"name"`
 	Image       string `yaml:"image"`
-	Port        string `yaml:"port"`
+	ExposedPort string `yaml:"exposedPort"`
 	Description string `yaml:"description"`
 	ServiceId   string `yaml:"serviceId"`
 	PlanId      string `yaml:"planId"`

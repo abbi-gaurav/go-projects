@@ -1,7 +1,7 @@
 catalog:
   - name: orders-api
     image: gabbi/my-go-extension:0.0.1
-    port: 8080
+    exposedPort: 8080
     description: "My awesome Orders API"
     serviceId: 123-123-123-123
     planId: default

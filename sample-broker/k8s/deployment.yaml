@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: sample-broker
+  name: sample-broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-broker
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: sample-broker
+    spec:
+      containers:
+      - image: gabbi/sample-broker:0.0.1
+        name: sample-broker
+        resources: {}
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+        volumeMounts:
+          - name: broker-catalog
+            mountPath: /etc/sample-broker
+        envFrom:
+          - secretRef:
+              name: sample-broker
+              optional: false
+      serviceAccountName: sample-broker
+      volumes:
+        - name: broker-catalog
+          configMap:
+            name: broker-catalog
+            optional: false
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: sample-broker
+  name: sample-broker
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: sample-broker
+status:
+  loadBalancer: {}
+---
+apiVersion: gateway.kyma-project.io/v1alpha1
+kind: APIRule
+metadata:
+  labels:
+    app: sample-broker
+  name: sample-broker
+spec:
+  gateway: kyma-gateway.kyma-system.svc.cluster.local
+  rules:
+    - accessStrategies:
+        - handler: noop
+      methods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - HEAD
+      path: /.*
+  service:
+    host: sample-broker
+    name: sample-broker
+    port: 8080

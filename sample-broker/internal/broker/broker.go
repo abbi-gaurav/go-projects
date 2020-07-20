@@ -3,6 +3,7 @@ package broker
 import (
 	"code.cloudfoundry.org/lager"
 	"context"
+	"github.com/abbi-gaurav/go-projects/sample-broker/internal/constants"
 	"github.com/abbi-gaurav/go-projects/sample-broker/internal/middleware"
 	"github.com/abbi-gaurav/go-projects/sample-broker/internal/model"
 	"github.com/pivotal-cf/brokerapi"
@@ -12,23 +13,20 @@ import (
 type K8SServiceBroker struct {
 	logger        lager.Logger
 	availableSvcs []domain.Service
-	servicesMap   map[string]domain.Service
 	service       *middleware.Service
 }
 
 func NewBroker(logger lager.Logger, services model.Services, service *middleware.Service) *K8SServiceBroker {
-	availableSvccList, servicesMap := to(services)
+	availableSvccList := to(services)
 	return &K8SServiceBroker{
 		logger:        logger,
 		availableSvcs: availableSvccList,
-		servicesMap:   servicesMap,
 		service:       service,
 	}
 }
 
-func to(services model.Services) ([]domain.Service, map[string]domain.Service) {
+func to(services model.Services) []domain.Service {
 	brokerSvcs := make([]domain.Service, len(services.Catalog))
-	serviceMap := make(map[string]domain.Service, len(services.Catalog))
 
 	for i, svc := range services.Catalog {
 		domainSvc := domain.Service{
@@ -40,12 +38,14 @@ func to(services model.Services) ([]domain.Service, map[string]domain.Service) {
 			BindingsRetrievable:  false,
 			PlanUpdatable:        false,
 			Plans:                []domain.ServicePlan{{ID: svc.PlanId, Name: "default", Description: "Default Plan"}},
-			Metadata:             &domain.ServiceMetadata{ImageUrl: svc.Image},
+			Metadata: &domain.ServiceMetadata{
+				ImageUrl:           svc.Image,
+				AdditionalMetadata: map[string]interface{}{constants.ExposedPortMetadataField: svc.ExposedPort},
+			},
 		}
 		brokerSvcs[i] = domainSvc
-		serviceMap[svc.ServiceId] = domainSvc
 	}
-	return brokerSvcs, serviceMap
+	return brokerSvcs
 }
 
 func (k *K8SServiceBroker) Services(ctx context.Context) ([]domain.Service, error) {
