@@ -3,6 +3,7 @@ package broker
 import (
 	"code.cloudfoundry.org/lager"
 	"context"
+	"github.com/abbi-gaurav/go-projects/sample-broker/internal/config"
 	"github.com/abbi-gaurav/go-projects/sample-broker/internal/constants"
 	"github.com/abbi-gaurav/go-projects/sample-broker/internal/middleware"
 	"github.com/abbi-gaurav/go-projects/sample-broker/internal/model"
@@ -17,10 +18,10 @@ type K8SServiceBroker struct {
 }
 
 func NewBroker(logger lager.Logger, services model.Services, service *middleware.Service) *K8SServiceBroker {
-	availableSvccList := to(services)
+	availableSvcList := to(services)
 	return &K8SServiceBroker{
 		logger:        logger,
-		availableSvcs: availableSvccList,
+		availableSvcs: availableSvcList,
 		service:       service,
 	}
 }
@@ -39,8 +40,11 @@ func to(services model.Services) []domain.Service {
 			PlanUpdatable:        false,
 			Plans:                []domain.ServicePlan{{ID: svc.PlanId, Name: "default", Description: "Default Plan"}},
 			Metadata: &domain.ServiceMetadata{
-				ImageUrl:           svc.Image,
-				AdditionalMetadata: map[string]interface{}{constants.ExposedPortMetadataField: svc.ExposedPort},
+				ImageUrl: svc.Image,
+				AdditionalMetadata: map[string]interface{}{
+					constants.ExposedPortMetadataField: svc.ExposedPort,
+					constants.Namespace:                config.AppConfig().Namespace,
+				},
 			},
 		}
 		brokerSvcs[i] = domainSvc
@@ -61,17 +65,12 @@ func (k *K8SServiceBroker) Provision(ctx context.Context, instanceID string, det
 	}
 	service := brokerapi.RetrieveServiceFromContext(ctx)
 
-	err = k.service.ProvisionService(service, params)
+	provisionedSpec, err := k.service.ProvisionService(service, params)
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
 
-	return domain.ProvisionedServiceSpec{
-		IsAsync:       false,
-		AlreadyExists: false,
-		DashboardURL:  "created",
-		OperationData: "something",
-	}, nil
+	return provisionedSpec, nil
 }
 
 func (k *K8SServiceBroker) Deprovision(ctx context.Context, instanceID string, details domain.DeprovisionDetails, asyncAllowed bool) (domain.DeprovisionServiceSpec, error) {

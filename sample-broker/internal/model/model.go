@@ -32,8 +32,14 @@ func Parse(filePath string) (Services, error) {
 	return services, nil
 }
 
+type auth struct {
+	BaUser     string `json:"baUser"`
+	BaPassword string `json:"baPassword"`
+}
+
 type ServiceParams struct {
-	Namespace string `json:"namespace,omitempty"`
+	ServiceInstanceName string `json:"serviceInstanceName"`
+	Auth                auth   `json:"auth"`
 }
 
 func Marshal(rawJson []byte) (*ServiceParams, error) {

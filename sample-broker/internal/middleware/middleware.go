@@ -3,6 +3,7 @@ package middleware
 import (
 	"code.cloudfoundry.org/lager"
 	"context"
+	appconfig "github.com/abbi-gaurav/go-projects/sample-broker/internal/config"
 	"github.com/abbi-gaurav/go-projects/sample-broker/internal/constants"
 	"github.com/abbi-gaurav/go-projects/sample-broker/internal/model"
 	apiRules "github.com/kyma-incubator/api-gateway/api/v1alpha1"
@@ -72,27 +73,34 @@ func getContainerPort(additionalMetadata map[string]interface{}) (int32, error) 
 	}
 }
 
-func (k *Service) ProvisionService(service *domain.Service, params *model.ServiceParams) error {
-	labels := map[string]string{"app": service.Name, "created-by": "sample-broker"}
+func (k *Service) ProvisionService(service *domain.Service, params *model.ServiceParams) (domain.ProvisionedServiceSpec, error) {
+	fqdn := params.ServiceInstanceName + "-" + appconfig.AppConfig().Namespace
+	labels := map[string]string{"app": params.ServiceInstanceName, "created-by": "sample-broker", "service": service.Name}
 	containerPort, err := getContainerPort(service.Metadata.AdditionalMetadata)
 
 	if err != nil {
-		return err
+		return domain.ProvisionedServiceSpec{}, err
 	}
 
 	if err := k.provisionDeployment(service, params, labels, containerPort); err != nil {
-		return err
+		return domain.ProvisionedServiceSpec{}, err
 	}
 
-	if err := k.provisionK8sService(service, params, labels, containerPort); err != nil {
-		return err
+	if err := k.provisionK8sService(params, labels, containerPort); err != nil {
+		return domain.ProvisionedServiceSpec{}, err
 	}
 
-	if err := k.provisionAPIRule(service, params, labels); err != nil {
-		return err
+	if err := k.provisionAPIRule(params, labels, &fqdn); err != nil {
+		return domain.ProvisionedServiceSpec{}, err
 	}
 
-	return nil
+	serviceUrl := "https://" + fqdn + "." + appconfig.AppConfig().ClusterDomain
+	return domain.ProvisionedServiceSpec{
+		IsAsync:       false,
+		AlreadyExists: false,
+		DashboardURL:  serviceUrl,
+		OperationData: serviceUrl,
+	}, nil
 }
 
 func (k *Service) provisionDeployment(service *domain.Service, params *model.ServiceParams, labels map[string]string, containerPort int32) error {
@@ -100,13 +108,13 @@ func (k *Service) provisionDeployment(service *domain.Service, params *model.Ser
 	return k.k8sClient.Create(context.TODO(), deployment)
 }
 
-func (k *Service) provisionK8sService(service *domain.Service, params *model.ServiceParams, labels map[string]string, containerPort int32) error {
-	k8sService := k.createK8SServiceObject(service, params, labels, containerPort)
+func (k *Service) provisionK8sService(params *model.ServiceParams, labels map[string]string, containerPort int32) error {
+	k8sService := k.createK8SServiceObject(params, labels, containerPort)
 	return k.k8sClient.Create(context.TODO(), k8sService)
 }
 
-func (k *Service) provisionAPIRule(service *domain.Service, params *model.ServiceParams, labels map[string]string) error {
-	kymaApiRule := k.createAPIRuleObject(service, params, labels)
+func (k *Service) provisionAPIRule(params *model.ServiceParams, labels map[string]string, fqdn *string) error {
+	kymaApiRule := k.createAPIRuleObject(params, labels, fqdn)
 	return k.k8sClient.Create(context.TODO(), kymaApiRule)
 }
 
@@ -114,8 +122,8 @@ func (k *Service) createK8sDeploymentObject(service *domain.Service, params *mod
 	replicas := int32(1)
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      service.Name,
-			Namespace: params.Namespace,
+			Name:      params.ServiceInstanceName,
+			Namespace: appconfig.AppConfig().Namespace,
 			Labels:    labels,
 		},
 		Spec: appsv1.DeploymentSpec{
@@ -130,7 +138,7 @@ func (k *Service) createK8sDeploymentObject(service *domain.Service, params *mod
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
 						Image: service.Metadata.ImageUrl,
-						Name:  service.Name,
+						Name:  params.ServiceInstanceName,
 						Ports: []corev1.ContainerPort{{
 							ContainerPort: containerPort,
 						}},
@@ -143,11 +151,11 @@ func (k *Service) createK8sDeploymentObject(service *domain.Service, params *mod
 	return deployment
 }
 
-func (k *Service) createK8SServiceObject(service *domain.Service, params *model.ServiceParams, labels map[string]string, containerPort int32) *corev1.Service {
+func (k *Service) createK8SServiceObject(params *model.ServiceParams, labels map[string]string, containerPort int32) *corev1.Service {
 	k8sSvc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      service.Name,
-			Namespace: params.Namespace,
+			Name:      params.ServiceInstanceName,
+			Namespace: appconfig.AppConfig().Namespace,
 			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
@@ -163,14 +171,13 @@ func (k *Service) createK8SServiceObject(service *domain.Service, params *model.
 	return k8sSvc
 }
 
-func (k *Service) createAPIRuleObject(service *domain.Service, params *model.ServiceParams, labels map[string]string) *apiRules.APIRule {
-	fqdn := service.Name + "-" + params.Namespace
+func (k *Service) createAPIRuleObject(params *model.ServiceParams, labels map[string]string, fqdn *string) *apiRules.APIRule {
 	port := uint32(constants.DefaultServicePort)
 	gateway := constants.KymaGatewayDomain
 	apiRule := apiRules.APIRule{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: params.Namespace,
-			Name:      service.Name,
+			Namespace: appconfig.AppConfig().Namespace,
+			Name:      params.ServiceInstanceName,
 			Labels:    labels,
 		},
 		Spec: apiRules.APIRuleSpec{
@@ -189,9 +196,9 @@ func (k *Service) createAPIRuleObject(service *domain.Service, params *model.Ser
 				},
 			},
 			Service: &apiRules.Service{
-				Name: &service.Name,
+				Name: &params.ServiceInstanceName,
 				Port: &port,
-				Host: &fqdn,
+				Host: fqdn,
 			},
 			Gateway: &gateway,
 		},

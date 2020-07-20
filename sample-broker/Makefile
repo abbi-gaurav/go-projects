@@ -37,13 +37,15 @@ set-rbac:
 	kubectl -n ${NS} create role sample-broker --verb=get,list,watch,create,delete,update --resource=deployments,services,apirules
 	kubectl -n ${NS} create rolebinding sample-broker --role=sample-broker --serviceaccount=${NS}:sample-broker
 
-set-auth:
-	kubectl -n ${NS} create secret generic sample-broker --from-literal=USERNAME=${BA_USER} --from-literal=PASSWORD=${BA_PASSWORD}
+create-secret:
+	kubectl -n ${NS} create secret generic sample-broker \
+		--from-literal=USERNAME=${BA_USER} --from-literal=PASSWORD=${BA_PASSWORD} \
+		--from-literal=CLUSTER_DOMAIN=${CLUSTER_DOMAIN}
 
 set-catalog:
 	kubectl -n ${NS} create configmap broker-catalog --from-file=examples/catalog.yaml
 
-pre-deploy: set-rbac set-auth set-catalog
+pre-deploy: set-rbac create-secret set-catalog
 
 deploy:
 	kubectl -n ${NS} apply -f k8s/deployment.yaml
