@@ -163,14 +163,33 @@ func (k *Service) tryGettingAPIRule(instanceId string) (*apiRules.APIRule, error
 	return &apiRuleList.Items[0], nil
 }
 
+func (k *Service) Deprovision(ctx context.Context, instanceID string, deprovisionDetails domain.DeprovisionDetails) (domain.DeprovisionServiceSpec, error) {
+	err := k.k8sClient.DeleteAllOf(
+		context.TODO(),
+		&apiRules.APIRule{},
+		client.MatchingLabels{constants.DemoOsbInstanceIdLabelName: instanceID},
+		client.InNamespace(appconfig.AppConfig().Namespace),
+	)
+	if err != nil {
+		return domain.DeprovisionServiceSpec{}, err
+	}
+	return domain.DeprovisionServiceSpec{
+		OperationData: "api rule deleted",
+	}, nil
+}
+
 func generateProvisionedSpec(fqdn string) domain.ProvisionedServiceSpec {
-	serviceUrl := "https://" + fqdn + "." + appconfig.AppConfig().ClusterDomain
+	serviceUrl := createServiceUrl(fqdn)
 	return domain.ProvisionedServiceSpec{
 		IsAsync:       false,
 		AlreadyExists: false,
 		DashboardURL:  serviceUrl,
 		OperationData: serviceUrl,
 	}
+}
+
+func createServiceUrl(fqdn string) string {
+	return "https://" + fqdn + "." + appconfig.AppConfig().ClusterDomain
 }
 
 func (k *Service) provisionK8sService(params *model.ServiceParams, labels map[string]string, containerPort int32) error {
@@ -234,4 +253,30 @@ func (k *Service) createK8sDeploymentObject(service *domain.Service, params *mod
 	}
 	k.logger.Info("create-deployment", lager.Data{"deployment": deployment})
 	return deployment
+}
+
+func (k *Service) Bind(instanceID string, bindingID string, bindDetails domain.BindDetails) (domain.Binding, error) {
+	apiRule, err := k.tryGettingAPIRule(instanceID)
+	if err != nil {
+		return domain.Binding{}, err
+	}
+	return domain.Binding{Credentials: dummyCredentials(apiRule)}, nil
+}
+
+func dummyCredentials(apiRule *apiRules.APIRule) map[string]interface{} {
+	return map[string]interface{}{
+		"url": createServiceUrl(*apiRule.Spec.Service.Host),
+		"auth": model.Auth{
+			BaUser:     "x",
+			BaPassword: "y",
+		},
+	}
+}
+
+func (k *Service) GetBinding(instanceID string, bindingID string) (domain.GetBindingSpec, error) {
+	apiRule, err := k.tryGettingAPIRule(instanceID)
+	if err != nil {
+		return domain.GetBindingSpec{}, err
+	}
+	return domain.GetBindingSpec{Credentials: dummyCredentials(apiRule)}, nil
 }

@@ -33,10 +33,21 @@ func to(services model.Services) []domain.Service {
 			Name:                 svc.Name,
 			Description:          svc.Description,
 			Bindable:             false,
+			PlanUpdatable:        false,
 			InstancesRetrievable: false,
 			BindingsRetrievable:  false,
-			PlanUpdatable:        false,
-			Plans:                []domain.ServicePlan{{ID: svc.PlanId, Name: "default", Description: "Default Plan"}},
+			Plans: []domain.ServicePlan{
+				{
+					ID:          svc.PlanId,
+					Name:        svc.PlanId,
+					Description: "Demo Plan",
+					Metadata: &domain.ServicePlanMetadata{
+						AdditionalMetadata: map[string]interface{}{
+							"supportedPlatforms": []string{"cloudfoundry", "kubernetes"},
+						},
+					},
+				},
+			},
 		}
 		brokerSvcs[i] = domainSvc
 	}
@@ -66,7 +77,7 @@ func (k *K8SServiceBroker) Provision(ctx context.Context, instanceID string, det
 }
 
 func (k *K8SServiceBroker) Deprovision(ctx context.Context, instanceID string, details domain.DeprovisionDetails, asyncAllowed bool) (domain.DeprovisionServiceSpec, error) {
-	return domain.DeprovisionServiceSpec{}, nil
+	return k.service.Deprovision(ctx, instanceID, details)
 }
 
 func (k *K8SServiceBroker) GetInstance(ctx context.Context, instanceID string) (domain.GetInstanceDetailsSpec, error) {
@@ -82,7 +93,7 @@ func (k *K8SServiceBroker) LastOperation(ctx context.Context, instanceID string,
 }
 
 func (k *K8SServiceBroker) Bind(ctx context.Context, instanceID, bindingID string, details domain.BindDetails, asyncAllowed bool) (domain.Binding, error) {
-	return domain.Binding{}, nil
+	return k.service.Bind(instanceID, bindingID, details)
 }
 
 func (k *K8SServiceBroker) Unbind(ctx context.Context, instanceID, bindingID string, details domain.UnbindDetails, asyncAllowed bool) (domain.UnbindSpec, error) {
@@ -90,7 +101,7 @@ func (k *K8SServiceBroker) Unbind(ctx context.Context, instanceID, bindingID str
 }
 
 func (k *K8SServiceBroker) GetBinding(ctx context.Context, instanceID, bindingID string) (domain.GetBindingSpec, error) {
-	return domain.GetBindingSpec{}, nil
+	return k.service.GetBinding(instanceID, bindingID)
 }
 
 func (k *K8SServiceBroker) LastBindingOperation(ctx context.Context, instanceID, bindingID string, details domain.PollDetails) (domain.LastOperation, error) {
