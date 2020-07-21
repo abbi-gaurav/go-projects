@@ -6,4 +6,5 @@ const (
 	ExposedPortMetadataField   = "exposedPort"
 	Namespace                  = "namespace"
 	DemoOsbInstanceIdLabelName = "demo-osb-instanceId"
+	InstanceNameKey            = "instance_name"
 )

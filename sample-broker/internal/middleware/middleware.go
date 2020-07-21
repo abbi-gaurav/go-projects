@@ -78,8 +78,8 @@ func getContainerPort(additionalMetadata map[string]interface{}) (int32, error) 
 	}
 }
 
-func (k *Service) ProvisionService(service *domain.Service, params *model.ServiceParams, instanceId string) (domain.ProvisionedServiceSpec, error) {
-	fqdn := params.ServiceInstanceName + "-" + appconfig.AppConfig().Namespace
+func (k *Service) ProvisionService(service *domain.Service, instanceName string, instanceId string) (domain.ProvisionedServiceSpec, error) {
+	fqdn := instanceName + "-" + appconfig.AppConfig().Namespace
 
 	existingInstance, err := k.tryGettingAPIRule(instanceId)
 	if err != nil {
@@ -90,31 +90,31 @@ func (k *Service) ProvisionService(service *domain.Service, params *model.Servic
 		return generateProvisionedSpec(fqdn), nil
 	}
 	labels := map[string]string{
-		"app": params.ServiceInstanceName, "created-by": "sample-broker",
+		"app": instanceName, "created-by": "sample-broker",
 		"service": service.Name, constants.DemoOsbInstanceIdLabelName: instanceId,
 	}
 
-	if err := k.provisionAPIRule(params, labels, &fqdn, instanceId, service); err != nil {
+	if err := k.provisionAPIRule(instanceName, labels, &fqdn, instanceId, service); err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
 
 	return generateProvisionedSpec(fqdn), nil
 }
 
-func (k *Service) provisionAPIRule(params *model.ServiceParams, labels map[string]string, fqdn *string, instanceId string, service *domain.Service) error {
-	kymaApiRule := k.createAPIRuleObject(params, labels, fqdn, service)
+func (k *Service) provisionAPIRule(instanceName string, labels map[string]string, fqdn *string, instanceId string, service *domain.Service) error {
+	kymaApiRule := k.createAPIRuleObject(instanceName, labels, fqdn, service)
 	err := k.k8sClient.Create(context.TODO(), kymaApiRule)
 	k.persistence.AddInstance(instanceId, kymaApiRule)
 	return err
 }
 
-func (k *Service) createAPIRuleObject(params *model.ServiceParams, labels map[string]string, fqdn *string, service *domain.Service) *apiRules.APIRule {
+func (k *Service) createAPIRuleObject(instanceName string, labels map[string]string, fqdn *string, service *domain.Service) *apiRules.APIRule {
 	port := uint32(constants.DefaultServicePort)
 	gateway := constants.KymaGatewayDomain
 	apiRule := apiRules.APIRule{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: appconfig.AppConfig().Namespace,
-			Name:      params.ServiceInstanceName,
+			Name:      instanceName,
 			Labels:    labels,
 		},
 		Spec: apiRules.APIRuleSpec{
@@ -260,6 +260,9 @@ func (k *Service) Bind(instanceID string, bindingID string, bindDetails domain.B
 	if err != nil {
 		return domain.Binding{}, err
 	}
+	if apiRule == nil {
+		return domain.Binding{}, nil
+	}
 	return domain.Binding{Credentials: dummyCredentials(apiRule)}, nil
 }
 
@@ -278,6 +281,9 @@ func (k *Service) GetBinding(instanceID string, bindingID string) (domain.GetBin
 	if err != nil {
 		return domain.GetBindingSpec{}, err
 	}
+	if apiRule == nil {
+		return domain.GetBindingSpec{}, nil
+	}
 	return domain.GetBindingSpec{Credentials: dummyCredentials(apiRule)}, nil
 }
 
@@ -285,6 +291,9 @@ func (k *Service) GetInstance(service *domain.Service, instanceID string) (domai
 	apiRule, err := k.tryGettingAPIRule(instanceID)
 	if err != nil {
 		return domain.GetInstanceDetailsSpec{}, err
+	}
+	if apiRule == nil {
+		return domain.GetInstanceDetailsSpec{}, nil
 	}
 	return domain.GetInstanceDetailsSpec{
 		ServiceID:    service.ID,
