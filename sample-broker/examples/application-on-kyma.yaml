@@ -19,11 +19,48 @@ spec:
         app: demo-orders-api
     spec:
       containers:
-      - image: gabbi/my-go-extension:0.0.1
-        name: my-go-extension
-        resources: {}
+      - image: gabbi/sample-extension-java:0.0.2-demo
+        name: demo-orders-api
         ports:
           - containerPort: 8080
+        env:
+          - name: SPRING_PROFILES_ACTIVE
+            value: cluster
+          - name: SPRING_DATASOURCE_URL
+            value: jdbc:h2:mem:testdb
+          - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+            value: org.h2.Driver
+          - name: SPRING_DATASOURCE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: dbPassword
+                name: sample-extension-java
+          - name: SPRING_DATASOURCE_USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: dbUser
+                name: sample-extension-java
+          - name: SPRING_SECURITY_USER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: appPassword
+                name: sample-extension-java
+          - name: SPRING_SECURITY_USER_NAME
+            valueFrom:
+              secretKeyRef:
+                key: appUser
+                name: sample-extension-java
+          - name: APPLICATION_CLUSTER_DOMAIN
+            valueFrom:
+              secretKeyRef:
+                key: clusterDomain
+                name: sample-extension-java
+          - name: APPLICATION_SUBDOMAIN
+            value: sample-extension-java
+          - name: APPLICATION_IS_SECURE
+            value: "true"
+          - name: SERVER_FORWARD-HEADERS-STRATEGY
+            value: framework
 status: {}
 ---
 apiVersion: v1

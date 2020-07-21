@@ -34,7 +34,7 @@ init:
 
 set-rbac:
 	kubectl -n ${NS} create serviceaccount sample-broker
-	kubectl -n ${NS} create role sample-broker --verb=get,list,watch,create,delete,update --resource=deployments,services,apirules,apirules/status
+	kubectl -n ${NS} create role sample-broker --verb=get,list,watch,create,delete,update,deletecollection --resource=deployments,services,apirules,apirules/status
 	kubectl -n ${NS} create rolebinding sample-broker --role=sample-broker --serviceaccount=${NS}:sample-broker
 
 create-secret:

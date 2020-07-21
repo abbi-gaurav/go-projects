@@ -267,8 +267,8 @@ func dummyCredentials(apiRule *apiRules.APIRule) map[string]interface{} {
 	return map[string]interface{}{
 		"url": createServiceUrl(*apiRule.Spec.Service.Host),
 		"auth": model.Auth{
-			BaUser:     "x",
-			BaPassword: "y",
+			BaUser:     "admin",
+			BaPassword: "nimda123",
 		},
 	}
 }
@@ -279,4 +279,16 @@ func (k *Service) GetBinding(instanceID string, bindingID string) (domain.GetBin
 		return domain.GetBindingSpec{}, err
 	}
 	return domain.GetBindingSpec{Credentials: dummyCredentials(apiRule)}, nil
+}
+
+func (k *Service) GetInstance(service *domain.Service, instanceID string) (domain.GetInstanceDetailsSpec, error) {
+	apiRule, err := k.tryGettingAPIRule(instanceID)
+	if err != nil {
+		return domain.GetInstanceDetailsSpec{}, err
+	}
+	return domain.GetInstanceDetailsSpec{
+		ServiceID:    service.ID,
+		PlanID:       service.Plans[0].ID,
+		DashboardURL: createServiceUrl(*apiRule.Spec.Service.Host),
+	}, nil
 }

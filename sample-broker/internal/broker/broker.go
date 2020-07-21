@@ -81,7 +81,7 @@ func (k *K8SServiceBroker) Deprovision(ctx context.Context, instanceID string, d
 }
 
 func (k *K8SServiceBroker) GetInstance(ctx context.Context, instanceID string) (domain.GetInstanceDetailsSpec, error) {
-	return domain.GetInstanceDetailsSpec{}, nil
+	return k.service.GetInstance(&k.availableSvcs[0], instanceID)
 }
 
 func (k *K8SServiceBroker) Update(ctx context.Context, instanceID string, details domain.UpdateDetails, asyncAllowed bool) (domain.UpdateServiceSpec, error) {
