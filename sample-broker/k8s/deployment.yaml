@@ -18,7 +18,7 @@ spec:
         app: sample-broker
     spec:
       containers:
-      - image: gabbi/sample-broker:0.0.1-demo
+      - image: gabbi/sample-broker:0.0.3-demo
         name: sample-broker
         resources: {}
         imagePullPolicy: Always

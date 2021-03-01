@@ -270,8 +270,8 @@ func dummyCredentials(apiRule *apiRules.APIRule) map[string]interface{} {
 	return map[string]interface{}{
 		"url": createServiceUrl(*apiRule.Spec.Service.Host),
 		"auth": model.Auth{
-			BaUser:     "admin",
-			BaPassword: "nimda123",
+			BaUser:     "z2F9vP9vNM",
+			BaPassword: "5^6TkztVqK^N1ccP",
 		},
 	}
 }

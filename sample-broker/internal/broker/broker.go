@@ -18,6 +18,7 @@ type K8SServiceBroker struct {
 
 func NewBroker(logger lager.Logger, services model.Services, service *middleware.Service) *K8SServiceBroker {
 	availableSvcList := to(services)
+	logger.Info("create-broker", lager.Data{"availableSvcList": availableSvcList})
 	return &K8SServiceBroker{
 		logger:        logger,
 		availableSvcs: availableSvcList,
