@@ -1,0 +1,13 @@
+{
+  "name": "suggest",
+  "class": "solr.SuggestComponent",
+  "suggester": {
+    "name": "mySuggester",
+    "lookupImpl": "FuzzyLookupFactory",
+    "dictionaryImpl": "DocumentDictionaryFactory",
+    "field": "description",
+    "weightField": "displayName",
+    "suggestAnalyzerFieldType": "string",
+    "buildOnStartup":           "false"
+  }
+}
