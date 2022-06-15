@@ -40,7 +40,7 @@ func main() {
 	fmt.Println(move(p, 10, 2))
 }
 
-func move[V Movable[S], S Subtractable](v V, distance S, meters S) S {
+func move[S Subtractable, V Movable[S]](v V, distance S, meters S) S {
 	v.move(meters)
 	return subtract2(distance, meters)
 }
