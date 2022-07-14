@@ -1,53 +1,42 @@
 package main
 
 import (
-	"flag"
-	"fmt"
+	"context"
+	"github.com/abbi-gaurav/go-projects/explore-eventing-fwks/dummy-subscriber/internal/config"
+	"github.com/abbi-gaurav/go-projects/explore-eventing-fwks/dummy-subscriber/internal/router"
 	"log"
 	"net/http"
-	"net/http/httputil"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
+	log.Println("starting the service...")
 
-	var (
-		port = flag.Int("port", 8080, "tcp port on which to listen for http requests")
-	)
-	flag.Parse()
-
-	http.Handle("/v1/events", mockHandler())
-
-	log.Printf("HTTP server starting on port %d", *port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
-}
-
-func mockHandler() http.Handler {
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch requestMethod := &r.Method; *requestMethod {
-		case http.MethodPost:
-			if r.Body == nil {
-				http.Error(w, "Please send a CloudEvent in the HTTP request body", http.StatusBadRequest)
-				return
-			}
-
-			wireRep := formatRequest(r)
-			fmt.Println("String rep")
-			fmt.Println(wireRep)
-			defer r.Body.Close()
-			w.WriteHeader(http.StatusCreated)
-		default:
-			http.Error(w, fmt.Sprintf("HTTP method '%v' is not supported", *requestMethod), http.StatusMethodNotAllowed)
-		}
-	})
-}
-
-// formatRequest generates ascii representation of a request
-func formatRequest(req *http.Request) string {
-	// Save a copy of this request for debugging.
-	requestDump, err := httputil.DumpRequest(req, true)
-	if err != nil {
-		fmt.Println(err)
+	config.InitConfig()
+	rtr := router.New()
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+	srv := &http.Server{
+		Addr:    ":" + "8080",
+		Handler: rtr,
 	}
-	return string(requestDump)
+
+	go func() {
+		log.Fatal(srv.ListenAndServe())
+	}()
+
+	killSignal := <-interrupt
+	switch killSignal {
+	case os.Interrupt:
+		log.Println("Got os interrupt...")
+	case syscall.SIGTERM:
+		log.Println("Got SIGTERM")
+	}
+	log.Println("The service is shutting down....")
+
+	srv.Shutdown(context.Background())
+
+	log.Println("Done..")
 }

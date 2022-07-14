@@ -1,8 +1,16 @@
-FROM golang:1.12 as builder
+FROM golang:1.18.3 as builder
+
+ENV GO111MODULE=on
 
 WORKDIR /go/src/dummy-subscriber
+COPY go.mod .
+
 COPY main.go .
-RUN ls ./
+COPY internal internal
+
+RUN go mod download
+RUN go mod tidy
+
 RUN CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo -o dummy-subscriber .
 
 FROM scratch
